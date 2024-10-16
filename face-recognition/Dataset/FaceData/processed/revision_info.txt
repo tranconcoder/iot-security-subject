@@ -1,0 +1,7 @@
+arguments: src/align_dataset_mtcnn.py Dataset/FaceData/raw Dataset/FaceData/processed --image_size 160 --margin 32 --random_order --gpu_memory_fraction 0.25
+--------------------
+tensorflow version: 2.17.0
+--------------------
+git hash: b'69ff1e149c0d84a123d6516ddd82970e65392608'
+--------------------
+b'diff --git a/src/align/detect_face.py b/src/align/detect_face.py\nindex 2300ff3..375da2c 100644\n--- a/src/align/detect_face.py\n+++ b/src/align/detect_face.py\n@@ -29,7 +29,9 @@ from __future__ import print_function\n from six import string_types, iteritems\n \n import numpy as np\n-import tensorflow as tf\n+import tensorflow.compat.v1 as tf\n+tf.disable_v2_behavior()\n+\n #from math import floor\n import cv2\n import os\ndiff --git a/src/face_rec.py b/src/face_rec.py\nindex f92cccf..a0fc5cf 100644\n--- a/src/face_rec.py\n+++ b/src/face_rec.py\n@@ -2,7 +2,8 @@ from __future__ import absolute_import\n from __future__ import division\n from __future__ import print_function\n \n-import tensorflow as tf\n+import tensorflow.compat.v1 as tf\n+tf.disable_v2_behavior()\n import argparse\n import facenet\n import os\ndiff --git a/src/face_rec_cam.py b/src/face_rec_cam.py\nindex 1a425a5..c406277 100644\n--- a/src/face_rec_cam.py\n+++ b/src/face_rec_cam.py\n@@ -2,7 +2,9 @@ from __future__ import absolute_import\n from __future__ import division\n from __future__ import print_function\n \n-import tensorflow as tf\n+import tensorflow.compat.v1 as tf\n+tf.disable_v2_behavior()\n+\n from imutils.video import VideoStream'
