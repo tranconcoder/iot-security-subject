@@ -12,6 +12,12 @@ import { Readable } from 'node:stream';
 import { WebsocketAnalytics } from './websocketAnalytics.service';
 
 import 'dotenv/config';
+import {
+	FACE_RECOGNITION_HOST,
+	FACE_RECOGNITION_PORT,
+	MEDIA_SERVER_HOST,
+	MEDIA_SERVER_PORT,
+} from '../config/env.config';
 
 export const readStreamEsp32CamSecurityGateImg = new Readable({
 	read() {},
@@ -47,7 +53,16 @@ export default function runWebsocketService(
 						websocketAnalytics.transferData(buffer.byteLength, 1);
 						readStreamEsp32CamSecurityGateImg.push(buffer);
 
-						fetch("")
+						const formData = new FormData();
+						formData.append('image', buffer.toString('base64'));
+
+						fetch(
+							`http://${FACE_RECOGNITION_HOST}:${FACE_RECOGNITION_PORT}/recog`,
+							{
+								method: 'POST',
+								body: formData,
+							}
+						);
 					});
 
 					break;

@@ -1,6 +1,4 @@
 dependencies:
-    esp-idf-rc522:
-        path: '../../components/esp-idf-rc522'
     setup_rc522:
         path: './components/setup_rc522'
     setup_esp32_cam:
@@ -9,6 +7,8 @@ dependencies:
         path: './components/setup_esp_websocket_client'
     config_http_client:
         path: ./components/config_http_client
+    esp-idf-rc522:
+        path: ../../components/esp-idf-rc522
     common_struct:
         path: ../../components/common_struct
     esp-websocket_client:

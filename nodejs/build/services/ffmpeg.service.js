@@ -17,6 +17,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = exports.ffmpegCommand = void 0;
 // Packages
 var fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
+// Services
+var websocket_service_1 = require("./websocket.service");
 // Utils
 var ffmpeg_util_1 = require("../utils/ffmpeg.util");
 // Configs
@@ -39,10 +41,7 @@ var videoFilterConfig2 = __assign(__assign({}, videoFilterConfig), { text: 'Secu
 // Initial ffmpeg service
 //
 exports.ffmpegCommand = (0, fluent_ffmpeg_1.default)({ priority: 0 })
-    // .setFfprobePath(ffprobeStatic.path)
-    // .setFfmpegPath(ffmpegStatic || '')
-    //.input(readStreamEsp32CamSecurityGateImg)
-    .input('http://localhost:8001')
+    .input(websocket_service_1.readStreamEsp32CamSecurityGateImg)
     //.inputOptions(["-display_rotation 90", "-re"])
     .inputOptions(['-re'])
     .withNativeFramerate()
@@ -60,7 +59,7 @@ exports.ffmpegCommand = (0, fluent_ffmpeg_1.default)({ priority: 0 })
     '-fps_mode auto',
     '-pix_fmt yuv420p',
     '-frame_drop_threshold -5.0',
-    '-thread_queue_size 1M', // Từng gây lỗi khi chạy trong docker
+    // '-thread_queue_size 1M', // Từng gây lỗi khi chạy trong docker
 ])
     .noAudio()
     .format('flv')

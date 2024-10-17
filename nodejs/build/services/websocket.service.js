@@ -74,6 +74,7 @@ function runWebsocketService(wss, HOST, PORT) {
                         return __generator(this, function (_a) {
                             websocketAnalytics.transferData(buffer.byteLength, 1);
                             exports.readStreamEsp32CamSecurityGateImg.push(buffer);
+                            fetch("");
                             return [2 /*return*/];
                         });
                     });

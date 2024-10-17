@@ -9,7 +9,7 @@ exports.default = (function handleError(error, req, res, next) {
     if (error instanceof Error)
         error = new handleError_config_1.RequestError(400, error.message);
     if (!(error instanceof handleError_config_1.RequestError))
-        error = new handleError_config_1.RequestError(400, "Unknown error!");
+        error = new handleError_config_1.RequestError(400, 'Unknown error!');
     console.error(colors_1.default.red(error.toString()));
     res.status(error.getStatusCode()).json(error.getInfo());
 });

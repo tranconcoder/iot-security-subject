@@ -27,9 +27,9 @@ exports.uploadRecognitionFace = exports.uploadFace = void 0;
 var multer_1 = __importStar(require("multer"));
 var handleError_config_1 = require("./handleError.config");
 var imageFileFilter = function (_, file, callback) {
-    var mimeTypeList = ["image/jpeg", "image/jpg", "image/png"];
+    var mimeTypeList = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!mimeTypeList.includes(file.mimetype)) {
-        callback(new handleError_config_1.RequestPayloadInvalidError("Mimetype not support!"), false);
+        callback(new handleError_config_1.RequestPayloadInvalidError('Mimetype not support!'), false);
         return;
     }
     callback(null, true);
