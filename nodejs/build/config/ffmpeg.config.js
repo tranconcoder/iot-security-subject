@@ -31,4 +31,4 @@ exports.LINE_MARGIN_SIZE = 3;
 exports.DRAWTEXT_COLOR = 'white@0.8';
 exports.DRAWTEXT_FONTPATH = path_1.default.join(__dirname, '../assets/fonts/CaskaydiaCoveNerdFontMono-Regular.ttf');
 exports.RTMP_LIVE_NAME = 'livestream0';
-exports.RTMP_SERVER_URL = "rtmp://".concat(_1.envConfig.MEDIA_SERVER_HOST, ":").concat(_1.envConfig.MEDIA_SERVER_PORT, "/live/").concat(exports.RTMP_LIVE_NAME);
+exports.RTMP_SERVER_URL = "rtmp://".concat(_1.envConfig.MEDIA_SERVER_HOST, ":").concat(_1.envConfig.MEDIA_SERVER_INPUT_PORT, "/live/").concat(exports.RTMP_LIVE_NAME);

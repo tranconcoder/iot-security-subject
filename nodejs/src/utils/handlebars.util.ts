@@ -2,6 +2,7 @@ import type { UnknownObject } from 'express-handlebars/types';
 
 import { readdirSync, existsSync, lstatSync } from 'fs';
 import path from 'path';
+import { envConfig } from '../config';
 
 const exHbsHelpers: UnknownObject = {
 	loadCss(view: string) {
@@ -23,6 +24,10 @@ const exHbsHelpers: UnknownObject = {
 		}
 
 		return cssTags;
+	},
+
+	getMediaServerOutputPath() {
+		return `${envConfig.MEDIA_SERVER_HOST_IP}:${envConfig.MEDIA_SERVER_OUTPUT_PORT}`;
 	},
 };
 

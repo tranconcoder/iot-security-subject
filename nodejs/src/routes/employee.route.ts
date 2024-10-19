@@ -3,7 +3,7 @@ import { Router } from 'express';
 
 // Middleware
 import {
-	uploadFaceMiddleware,
+	uploadNewFacesMiddleware,
 	uploadRecognitionFaceMiddleware,
 } from '../middlewares/multer.middleware';
 

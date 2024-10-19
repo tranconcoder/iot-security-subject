@@ -1,6 +1,5 @@
-import { uploadFace, uploadRecognitionFace } from "../config/multer.config";
+import { uploadFace, uploadNewFaces } from '../config/multer.config';
 
-export const uploadFaceMiddleware = uploadFace.array("face-img", 100);
+export const uploadNewFacesMiddleware = uploadNewFaces.array('faces', 12);
 
-export const uploadRecognitionFaceMiddleware =
-    uploadRecognitionFace.single("face-img");
+export const uploadRecognitionFaceMiddleware = uploadFace.single('face-img');

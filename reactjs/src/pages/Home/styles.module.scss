@@ -1,0 +1,92 @@
+.dashboard {
+	background-color: var(--white-color);
+	border-radius: 0 0 15px 15px;
+	padding: 30px;
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+	margin-bottom: 30px;
+}
+
+.cameras {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 30px;
+}
+
+.camera {
+	background-color: var(--primary-brightness-color);
+	height: 250px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 15px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	transition: transform 0.3s ease;
+	font-size: 1.2em;
+	font-weight: bold;
+	color: var(--white-color);
+}
+
+.camera:hover {
+	transform: scale(1.05);
+}
+
+.metrics {
+	display: flex;
+	justify-content: space-around;
+	margin-top: 30px;
+}
+
+.metric {
+	text-align: center;
+	background: var(--white-color);
+	padding: 20px;
+	border-radius: 15px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	transition: transform 0.3s ease;
+}
+
+.metric:hover {
+	transform: translateY(-5px);
+}
+
+.metric-value {
+	font-size: 3em;
+	font-weight: 700;
+	color: var(--primary-color);
+	margin-bottom: 10px;
+}
+
+.metric-label {
+	font-size: 1.2em;
+	color: var(--title-color);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+nav {
+	text-align: center;
+	margin-top: 30px;
+}
+
+nav a {
+	background-color: var(--primary-color);
+	color: var(--white-color);
+	padding: 12px 25px;
+	text-decoration: none;
+	border-radius: 25px;
+	display: inline-block;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+nav a:hover {
+	background-color: var(--primary-brightness-color);
+	transform: translateY(-3px);
+	box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}

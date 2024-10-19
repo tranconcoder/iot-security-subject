@@ -18,9 +18,11 @@ import cv2
 import collections
 from sklearn.svm import SVC
 import base64
+import warnings
+warnings.simplefilter("ignore", DeprecationWarning)
 
 MINSIZE = 20
-THRESHOLD = [0.6, 0.7, 0.7]
+THRESHOLD = [0.2, 0.3, 0.3]
 FACTOR = 0.709
 IMAGE_SIZE = 182
 INPUT_IMAGE_SIZE = 160
@@ -38,44 +40,42 @@ tf.Graph().as_default()
 gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.6)
 sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
 
-
 # Load the model
 print('Loading feature extraction model')
 facenet.load_model(FACENET_MODEL_PATH)
 
 # Get input and output tensors
-images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
-embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
-phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
+images_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("input:0")
+embeddings = tf.compat.v1.get_default_graph().get_tensor_by_name("embeddings:0")
+phase_train_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("phase_train:0")
 embedding_size = embeddings.get_shape()[1]
 pnet, rnet, onet = align.detect_face.create_mtcnn(sess, "align")
-
-
 
 app = Flask(__name__)
 CORS(app)
 
-
-
 @app.route('/')
 @cross_origin()
 def index():
-    return "OK!";
+    return "OK!"
+
+@app.route("/add-user", methods=["POST"])
+@cross_origin()
+def add_user():
+    if request.method == "POST":
+        
+
 
 @app.route('/recog', methods=['POST'])
 @cross_origin()
 def upload_img_file():
     if request.method == 'POST':
-        # base 64
         name="Unknown"
         f = request.form.get('image')
-        w = int(request.form.get('w'))
-        h = int(request.form.get('h'))
 
         decoded_string = base64.b64decode(f)
         frame = np.fromstring(decoded_string, dtype=np.uint8)
-        #frame = frame.reshape(w,h,3)
-        frame = cv2.imdecode(frame, cv2.IMREAD_ANYCOLOR)  # cv2.IMREAD_COLOR in OpenCV 3.1
+        frame = cv2.imdecode(frame, cv2.IMREAD_ANYCOLOR)
 
         bounding_boxes, _ = align.detect_face.detect_face(frame, MINSIZE, pnet, rnet, onet, THRESHOLD, FACTOR)
 
@@ -90,7 +90,6 @@ def upload_img_file():
                 bb[i][2] = det[i][2]
                 bb[i][3] = det[i][3]
                 cropped = frame
-                #cropped = frame[bb[i][1]:bb[i][3], bb[i][0]:bb[i][2], :]
                 scaled = cv2.resize(cropped, (INPUT_IMAGE_SIZE, INPUT_IMAGE_SIZE),
                                     interpolation=cv2.INTER_CUBIC)
                 scaled = facenet.prewhiten(scaled)

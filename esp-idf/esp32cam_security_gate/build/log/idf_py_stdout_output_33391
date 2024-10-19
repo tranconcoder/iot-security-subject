@@ -1,0 +1,15 @@
+[0/1] Re-running CMake...
+-- Building ESP-IDF components for target esp32
+NOTICE: Skipping optional dependency: usb_device
+NOTICE: Skipping optional dependency: espressif/esp_modem_usb_dte
+NOTICE: Skipping optional dependency: espressif/esp_tinyusb
+NOTICE: Skipping optional dependency: usb_device
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/components/common_struct for dependency "common_struct", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/config_http_client for dependency "config_http_client", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/components/esp-idf-rc522 for dependency "esp-idf-rc522", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/components/esp-websocket_client for dependency "esp-websocket_client", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_esp32_cam for dependency "setup_esp32_cam", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_esp_websocket_client for dependency "setup_esp_websocket_client", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+Using component placed at /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_rc522 for dependency "setup_rc522", specified in /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/idf_component.yml
+NOTICE: Skipping optional dependency: espressif/esp_modem_usb_dte
+NOTICE: Skipping optional dependency: espressif/esp_tinyusb

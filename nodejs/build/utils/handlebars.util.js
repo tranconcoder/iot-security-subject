@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var path_1 = __importDefault(require("path"));
+var config_1 = require("../config");
 var exHbsHelpers = {
     loadCss: function (view) {
         var viewFileName = view.split('/').at(-1);
@@ -19,6 +20,9 @@ var exHbsHelpers = {
             });
         }
         return cssTags;
+    },
+    getMediaServerOutputPath: function () {
+        return "".concat(config_1.envConfig.MEDIA_SERVER_HOST_IP, ":").concat(config_1.envConfig.MEDIA_SERVER_OUTPUT_PORT);
     },
 };
 exports.default = exHbsHelpers;

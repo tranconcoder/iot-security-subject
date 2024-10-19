@@ -19,15 +19,16 @@ const faceStorage = memoryStorage();
 export const uploadFace = multer({
 	storage: faceStorage,
 	limits: {
-		fileSize: 10 * 1024 ** 2, // 1Mb
+		fileSize: 10 * 1024 ** 2, // 10Mb
 	},
 	fileFilter: imageFileFilter,
 });
 
-export const uploadRecognitionFace = multer({
+export const uploadNewFaces = multer({
 	storage: memoryStorage(),
 	fileFilter: imageFileFilter,
 	limits: {
-		fileSize: 10 * 1024 ** 2, // 1Mb
+		fileSize: 10 * 1024 ** 2, // 10Mb
+		files: 12,
 	},
 });

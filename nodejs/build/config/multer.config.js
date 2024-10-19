@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadRecognitionFace = exports.uploadFace = void 0;
+exports.uploadNewFaces = exports.uploadFace = void 0;
 var multer_1 = __importStar(require("multer"));
 var handleError_config_1 = require("./handleError.config");
 var imageFileFilter = function (_, file, callback) {
@@ -38,14 +38,15 @@ var faceStorage = (0, multer_1.memoryStorage)();
 exports.uploadFace = (0, multer_1.default)({
     storage: faceStorage,
     limits: {
-        fileSize: 10 * Math.pow(1024, 2), // 1Mb
+        fileSize: 10 * Math.pow(1024, 2), // 10Mb
     },
     fileFilter: imageFileFilter,
 });
-exports.uploadRecognitionFace = (0, multer_1.default)({
+exports.uploadNewFaces = (0, multer_1.default)({
     storage: (0, multer_1.memoryStorage)(),
     fileFilter: imageFileFilter,
     limits: {
-        fileSize: 10 * Math.pow(1024, 2), // 1Mb
+        fileSize: 10 * Math.pow(1024, 2), // 10Mb
+        files: 12,
     },
 });
