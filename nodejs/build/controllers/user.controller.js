@@ -39,7 +39,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserController = void 0;
 var user_service_1 = __importDefault(require("../services/user.service"));
 var UserController = /** @class */ (function () {
     function UserController() {
@@ -50,10 +49,10 @@ var UserController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         console.log(req.files);
-                        return [4 /*yield*/, user_service_1.default.addUser()];
+                        return [4 /*yield*/, user_service_1.default.addUser(req.files)];
                     case 1:
                         _a.sent();
-                        res.send(200).json({ status: 200 });
+                        res.status(200).json({ status: 200 });
                         return [2 /*return*/];
                 }
             });
@@ -61,4 +60,4 @@ var UserController = /** @class */ (function () {
     };
     return UserController;
 }());
-exports.UserController = UserController;
+exports.default = UserController;

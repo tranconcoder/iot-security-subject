@@ -1,6 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadRecognitionFaceMiddleware = exports.uploadNewFacesMiddleware = void 0;
+exports.uploadRecognitionFaceMiddleware = exports.uploadNewFacesMiddleware = exports.validateMinFile = void 0;
+var handleError_config_1 = require("../config/handleError.config");
 var multer_config_1 = require("../config/multer.config");
-exports.uploadNewFacesMiddleware = multer_config_1.uploadNewFaces.array('faces', 12);
-exports.uploadRecognitionFaceMiddleware = multer_config_1.uploadFace.single('face-img');
+var handleError_middware_1 = require("./handleError.middware");
+var validateMinFile = function (min) {
+    return function (req, _, next) {
+        var _a;
+        var fileCount = ((_a = req.files) === null || _a === void 0 ? void 0 : _a.length) || 0;
+        console.log(req.files);
+        if (fileCount < min)
+            throw new handleError_config_1.RequestForbiddenError("Files count must be greater or equal than ".concat(min, "."));
+        next();
+    };
+};
+exports.validateMinFile = validateMinFile;
+exports.uploadNewFacesMiddleware = [
+    multer_config_1.uploadNewFaces.array("faces"),
+    (0, exports.validateMinFile)(12),
+].map(function (fn) { return (0, handleError_middware_1.catchError)(fn); });
+exports.uploadRecognitionFaceMiddleware = multer_config_1.uploadFace.single("face-img");

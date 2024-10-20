@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RequestPayloadInvalidError = exports.RequestNotFoundError = exports.RequestError = void 0;
+exports.RequestForbiddenError = exports.RequestPayloadInvalidError = exports.RequestNotFoundError = exports.RequestError = void 0;
 var RequestError = /** @class */ (function () {
     function RequestError(statusCode, message) {
         this.statusCode = statusCode;
@@ -56,3 +56,11 @@ var RequestPayloadInvalidError = /** @class */ (function (_super) {
     return RequestPayloadInvalidError;
 }(RequestError));
 exports.RequestPayloadInvalidError = RequestPayloadInvalidError;
+var RequestForbiddenError = /** @class */ (function (_super) {
+    __extends(RequestForbiddenError, _super);
+    function RequestForbiddenError(message) {
+        return _super.call(this, 403, message) || this;
+    }
+    return RequestForbiddenError;
+}(RequestError));
+exports.RequestForbiddenError = RequestForbiddenError;

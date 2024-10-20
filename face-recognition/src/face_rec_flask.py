@@ -59,12 +59,14 @@ CORS(app)
 def index():
     return "OK!"
 
-@app.route("/add-user", methods=["POST"])
+@app.route("/add", methods=["POST"])
 @cross_origin()
 def add_user():
-    if request.method == "POST":
-        
+    if request.method != "POST":
+        return "Method not allow"
 
+    files = request.files
+    print(files)
 
 @app.route('/recog', methods=['POST'])
 @cross_origin()

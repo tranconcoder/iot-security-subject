@@ -39,3 +39,9 @@ export class RequestPayloadInvalidError extends RequestError {
         super(422, message);
     }
 }
+
+export class RequestForbiddenError extends RequestError  {
+    constructor(message: string) {
+        super(403, message)
+    }
+}
