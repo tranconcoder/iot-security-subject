@@ -31,14 +31,23 @@ import {
 //
 // Initial ffmpeg service
 //
-export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
-	.input(readStreamEsp32CamSecurityGateImg)
-	//.inputOptions(["-display_rotation 90", "-re"])
+const ffmpegCommandBase = Ffmpeg({ priority: 0 })
 	.inputOptions(['-re'])
 	.withNativeFramerate()
 	.withNoAudio()
 	.withSize(reverseFrameSize(FRAMESIZE))
 	.nativeFramerate()
+	.noAudio()
+	.format('flv')
+	.on('start', handleStart)
+	.on('codecData', handleCodecData)
+	.on('progress', handleProgress)
+	.on('end', handleEnd)
+	.on('error', handleError);
+
+export const ffmpegCommandSecurityGate = ffmpegCommandBase
+	.clone()
+	.input(readStreamEsp32CamSecurityGateImg)
 	.outputOptions([
 		'-preset ultrafast',
 		'-c:v libx264',
@@ -60,22 +69,11 @@ export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
 		'-frame_drop_threshold -5.0',
 		// '-thread_queue_size 1M', // Từng gây lỗi khi chạy trong docker
 	])
-	.noAudio()
-	.format('flv')
-	.output(RTMP_SECURITY_GATE_URL)
-	.on('start', handleStart)
-	.on('codecData', handleCodecData)
-	.on('progress', handleProgress)
-	.on('end', handleEnd)
-	.on('error', handleError);
+	.output(RTMP_SECURITY_GATE_URL);
 
-export const ffmpegCommandMonitor = Ffmpeg({ priority: 1 })
+export const ffmpegCommandMonitor = ffmpegCommandBase
+	.clone()
 	.input(readStreamEsp32CamMonitorImg)
-	.inputOptions(['-re'])
-	.withNativeFramerate()
-	.withNoAudio()
-	.withSize(reverseFrameSize(FRAMESIZE))
-	.nativeFramerate()
 	.outputOptions([
 		'-preset medium ',
 		'-c:v libx264',
@@ -91,20 +89,14 @@ export const ffmpegCommandMonitor = Ffmpeg({ priority: 1 })
 				'=',
 				':'
 			)}`,
-		'-b:v 4M',
+		'-b:v 1M',
+		'-r 20',
 		'-fps_mode auto',
 		'-pix_fmt yuv420p',
 		'-frame_drop_threshold -5.0',
 		// '-thread_queue_size 1M', // Từng gây lỗi khi chạy trong docker
 	])
-	.noAudio()
-	.format('flv')
-	.output(RTMP_MONITOR_URL)
-	.on('start', handleStart)
-	.on('codecData', handleCodecData)
-	.on('progress', handleProgress)
-	.on('end', handleEnd)
-	.on('error', handleError);
+	.output(RTMP_MONITOR_URL);
 
 export const run = () => {
 	ffmpegCommandSecurityGate.run();
