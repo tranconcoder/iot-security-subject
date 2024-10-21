@@ -1,0 +1,30 @@
+.container {
+  @include size(100vw, 100vh);
+  @include flex(column, center, center);
+
+  .box {
+    @include size(120rem, false);
+    @include maxSize(calc(100vw - 3rem), calc(100vh - 3rem));
+    background-color: $whiteColor;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    border-radius: 1.6rem;
+    overflow: hidden;
+
+    .header {
+      @include text($whiteColor, 2.4rem, 700);
+      background-color: $primaryColor;
+      padding: 1.2rem;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .body {
+      padding: 2rem;
+    }
+  }
+
+  .button {
+    @include size(10rem, false);
+    margin-top: 2rem;
+  }
+}
