@@ -3,7 +3,7 @@ import {
 	FACE_RECOGNITION_SERVER_PORT,
 } from '../config/env.config';
 import { RequestError } from '../config/handleError.config';
-import { readStreamEsp32CamSecurityGateImg } from './websocket.service';
+import { readStreamEsp32CamSecurityGateImg } from './stream.service';
 
 export default class SecurityGateServices {
 	public static async authDoor(rfidSerialNumber: string) {

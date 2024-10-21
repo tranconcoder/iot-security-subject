@@ -1,5 +1,6 @@
 import path from 'path';
 import { envConfig } from '.';
+import { ConfigFilterVideo } from '../types/ffmpeg';
 
 // Bin file path
 export const FFMPEG_PATH = path.join(__dirname, '../assets/bin/fffmpeg/ffmpeg');
@@ -34,5 +35,36 @@ export const DRAWTEXT_FONTPATH = path.join(
 	__dirname,
 	'../assets/fonts/CaskaydiaCoveNerdFontMono-Regular.ttf'
 );
-export const RTMP_LIVE_NAME = 'livestream0';
-export const RTMP_SERVER_URL = `rtmp://${envConfig.MEDIA_SERVER_HOST}:${envConfig.MEDIA_SERVER_INPUT_PORT}/live/${RTMP_LIVE_NAME}`;
+export const SECURITY_GATE_LIVE_NAME = 'livestream0';
+export const MONITOR_LIVE_NAME = 'livestream1';
+export const RTMP_SERVER_BASE_URL = `rtmp://${envConfig.MEDIA_SERVER_HOST}:${envConfig.MEDIA_SERVER_INPUT_PORT}/live`;
+export const RTMP_SECURITY_GATE_URL = `${RTMP_SERVER_BASE_URL}/${SECURITY_GATE_LIVE_NAME}`;
+export const RTMP_MONITOR_URL = `${RTMP_SERVER_BASE_URL}/${MONITOR_LIVE_NAME}`;
+
+export const timeFilterConfig: ConfigFilterVideo = {
+	text: '%{localtime}',
+	fontcolor: DRAWTEXT_COLOR,
+	fontfile: DRAWTEXT_FONTPATH,
+	fontsize: FONTSIZE,
+	x: FRAME_PADDING_X,
+	y: FRAME_PADDING_Y,
+};
+export const securityGateFilterConfig = {
+	...timeFilterConfig,
+	text: 'SecurityCam',
+	get x() {
+		return parseInt(
+			FRAMESIZE_WIDTH - FONTSIZE * (19 / 30) * this.text.length + ''
+		);
+	},
+} as ConfigFilterVideo;
+
+export const monitorFilterConfig = {
+	...timeFilterConfig,
+	text: 'Monitor Cam',
+	get x() {
+		return parseInt(
+			FRAMESIZE_WIDTH - FONTSIZE * (19 / 30) * this.text.length + ''
+		);
+	},
+} as ConfigFilterVideo;

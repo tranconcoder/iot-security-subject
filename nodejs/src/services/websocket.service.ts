@@ -1,21 +1,18 @@
 import type { Request } from 'express';
-import type { WebSocketServer } from 'ws';
 import type { WebSocketCustom } from '../types/ws';
-import { WebSocketSourceEnum } from '../enums/ws.enum';
 
 // Websocket
 import url from 'url';
 import { v4 as uuidv4 } from 'uuid';
-import { Readable } from 'node:stream';
-
+import { WebSocketServer } from 'ws';
+import { WebSocketSourceEnum } from '../enums/ws.enum';
 // Analytics
 import { WebsocketAnalytics } from './websocketAnalytics.service';
-
-import 'dotenv/config';
-
-export const readStreamEsp32CamSecurityGateImg = new Readable({
-	read() {},
-});
+// Stream
+import {
+	readStreamEsp32CamMonitorImg,
+	readStreamEsp32CamSecurityGateImg,
+} from './stream.service';
 
 const websocketAnalytics = new WebsocketAnalytics(0, 0, 10_000);
 websocketAnalytics.startAnalytics();
@@ -47,9 +44,15 @@ export default function runWebsocketService(
 						websocketAnalytics.transferData(buffer.byteLength, 1);
 						readStreamEsp32CamSecurityGateImg.push(buffer);
 					});
-
 					break;
 
+				case WebSocketSourceEnum.ESP32CAM_MONITOR_SEND_IMG:
+					ws.on('message', async function message(buffer: Buffer) {
+						readStreamEsp32CamMonitorImg.push(buffer);
+					});
+					break;
+
+				case WebSocketSourceEnum.INVALID_SOURCE:
 				default:
 					console.log('Source is not valid!');
 					ws.close();

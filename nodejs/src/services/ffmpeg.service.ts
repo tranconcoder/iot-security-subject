@@ -1,9 +1,10 @@
-// Types
-import type { ConfigFilterVideo } from '../types/ffmpeg';
 // Packages
 import Ffmpeg from 'fluent-ffmpeg';
-// Services
-import { readStreamEsp32CamSecurityGateImg } from './websocket.service';
+// Stream
+import {
+	readStreamEsp32CamMonitorImg,
+	readStreamEsp32CamSecurityGateImg,
+} from './stream.service';
 // Utils
 import {
 	convertObjectConfigToString,
@@ -16,43 +17,21 @@ import {
 } from '../utils/ffmpeg.util';
 // Configs
 import {
-	DRAWTEXT_COLOR,
-	DRAWTEXT_FONTPATH,
-	FFMPEG_PATH,
-	FFPROBE_PATH,
-	FONTSIZE,
 	FRAMESIZE,
-	FRAMESIZE_WIDTH,
-	FRAME_PADDING_X,
-	FRAME_PADDING_Y,
-	RTMP_SERVER_URL,
+	RTMP_MONITOR_URL,
+	RTMP_SECURITY_GATE_URL,
 } from '../config/ffmpeg.config';
-
-//
 // Video filter config
-//
-const videoFilterConfig: ConfigFilterVideo = {
-	text: '%{localtime}',
-	fontcolor: DRAWTEXT_COLOR,
-	fontfile: DRAWTEXT_FONTPATH,
-	fontsize: FONTSIZE,
-	x: FRAME_PADDING_X,
-	y: FRAME_PADDING_Y,
-};
-const videoFilterConfig2 = {
-	...videoFilterConfig,
-	text: 'SecurityCam',
-	get x() {
-		return parseInt(
-			FRAMESIZE_WIDTH - FONTSIZE * (19 / 30) * this.text.length + ''
-		);
-	},
-} as ConfigFilterVideo;
+import {
+	securityGateFilterConfig,
+	timeFilterConfig,
+	monitorFilterConfig,
+} from '../config/ffmpeg.config';
 
 //
 // Initial ffmpeg service
 //
-export const ffmpegCommand = Ffmpeg({ priority: 0 })
+export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
 	.input(readStreamEsp32CamSecurityGateImg)
 	//.inputOptions(["-display_rotation 90", "-re"])
 	.inputOptions(['-re'])
@@ -66,12 +45,12 @@ export const ffmpegCommand = Ffmpeg({ priority: 0 })
 		`-vf ` +
 			//`hflip,` +
 			`drawtext=${convertObjectConfigToString(
-				videoFilterConfig,
+				timeFilterConfig,
 				'=',
 				':'
 			)},` +
 			`drawtext=${convertObjectConfigToString(
-				videoFilterConfig2,
+				securityGateFilterConfig,
 				'=',
 				':'
 			)}`,
@@ -83,7 +62,44 @@ export const ffmpegCommand = Ffmpeg({ priority: 0 })
 	])
 	.noAudio()
 	.format('flv')
-	.output(RTMP_SERVER_URL)
+	.output(RTMP_SECURITY_GATE_URL)
+	.on('start', handleStart)
+	.on('codecData', handleCodecData)
+	.on('progress', handleProgress)
+	.on('end', handleEnd)
+	.on('error', handleError);
+
+export const ffmpegCommandMonitor = Ffmpeg({ priority: 1 })
+	.input(readStreamEsp32CamMonitorImg)
+	.inputOptions(['-re'])
+	.withNativeFramerate()
+	.withNoAudio()
+	.withSize(reverseFrameSize(FRAMESIZE))
+	.nativeFramerate()
+	.outputOptions([
+		'-preset medium ',
+		'-c:v libx264',
+		`-vf ` +
+			//`hflip,` +
+			`drawtext=${convertObjectConfigToString(
+				timeFilterConfig,
+				'=',
+				':'
+			)},` +
+			`drawtext=${convertObjectConfigToString(
+				monitorFilterConfig,
+				'=',
+				':'
+			)}`,
+		'-b:v 4M',
+		'-fps_mode auto',
+		'-pix_fmt yuv420p',
+		'-frame_drop_threshold -5.0',
+		// '-thread_queue_size 1M', // Từng gây lỗi khi chạy trong docker
+	])
+	.noAudio()
+	.format('flv')
+	.output(RTMP_MONITOR_URL)
 	.on('start', handleStart)
 	.on('codecData', handleCodecData)
 	.on('progress', handleProgress)
@@ -91,5 +107,6 @@ export const ffmpegCommand = Ffmpeg({ priority: 0 })
 	.on('error', handleError);
 
 export const run = () => {
-	ffmpegCommand.run();
+	ffmpegCommandSecurityGate.run();
+	ffmpegCommandMonitor.run();
 };
