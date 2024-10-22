@@ -1,3 +1,6 @@
+import type { OutletPassType } from "../layouts/BoxLayout";
+
+// Styles
 import styles from "./styles.module.scss";
 import classnames from "classnames/bind";
 // Components
@@ -6,17 +9,20 @@ import CameraPreview from "../CameraPreview";
 import SensorValue from "../SensorValue";
 // Hooks
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 // Configs
 import { DHT_DATA_UPDATE_TIME } from "../../configs/sensor.config";
 import {
     LIVE_STREAM_SECURITY_GATE_PATH_FLV,
     LIVE_STREAM_MONITOR_PATH_FLV,
 } from "../../configs/stream.config";
+// Services
 import axiosInstance from "../../services/axios";
 
 const cx = classnames.bind(styles);
 
 export default function Dashboard() {
+    const [setTitle, setButtonProps] = useOutletContext<OutletPassType>();
     const [temp, setTemp] = useState(0);
     const [humidity, setHumidity] = useState(0);
 
@@ -27,6 +33,16 @@ export default function Dashboard() {
         setHumidity(data.humidity);
     };
 
+    // Update UI
+    useEffect(() => {
+        setTitle("Dashboard");
+        setButtonProps({
+            redirect: "/chart",
+            children: "Xem biểu đồ",
+        });
+    }, []); // eslint-disable-line
+
+    // Update sensor value
     useEffect(() => {
         updateData();
         const intervalId = setInterval(updateData, DHT_DATA_UPDATE_TIME);

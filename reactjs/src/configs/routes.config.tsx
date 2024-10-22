@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import BoxLayout from "../components/layouts/BoxLayout";
 import ChartPage from "../pages/Chart";
 
 // Pages
@@ -10,11 +11,19 @@ const router = createBrowserRouter([
         element: <h1>404, Not found!</h1>,
     },
     {
-        path: "/",
-        element: <DashboardPage />,
+        path: "",
+        element: <BoxLayout />,
+        children: [
+            {
+                path: "/",
+                element: <DashboardPage/>,
+            },
+            {
+                path: "/chart",
+                element: <ChartPage />,
+            },
+        ],
     },
-    { 
-path: "/chart", element: <ChartPage /> },
 ]);
 
 export default router;
