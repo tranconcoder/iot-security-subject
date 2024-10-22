@@ -1,0 +1,4 @@
+.camera-partial {
+  @include flex(row, center);
+  gap: 3rem;
+}
