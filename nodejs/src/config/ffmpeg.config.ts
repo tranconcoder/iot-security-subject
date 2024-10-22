@@ -35,8 +35,8 @@ export const DRAWTEXT_FONTPATH = path.join(
 	__dirname,
 	'../assets/fonts/CaskaydiaCoveNerdFontMono-Regular.ttf'
 );
-export const SECURITY_GATE_LIVE_NAME = 'livestream0';
-export const MONITOR_LIVE_NAME = 'livestream1';
+export const SECURITY_GATE_LIVE_NAME = 'security_gate';
+export const MONITOR_LIVE_NAME = 'monitor';
 export const RTMP_SERVER_BASE_URL = `rtmp://${envConfig.MEDIA_SERVER_HOST}:${envConfig.MEDIA_SERVER_INPUT_PORT}/live`;
 export const RTMP_SECURITY_GATE_URL = `${RTMP_SERVER_BASE_URL}/${SECURITY_GATE_LIVE_NAME}`;
 export const RTMP_MONITOR_URL = `${RTMP_SERVER_BASE_URL}/${MONITOR_LIVE_NAME}`;

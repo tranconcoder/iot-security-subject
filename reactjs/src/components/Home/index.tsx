@@ -7,8 +7,12 @@ import SensorValue from "../SensorValue";
 // Hooks
 import { useEffect, useState } from "react";
 // Configs
-import { LIVE_STREAM_PATH_FLV } from "../../configs/stream.config";
 import { DHT_DATA_UPDATE_TIME } from "../../configs/sensor.config";
+import {
+    LIVE_STREAM_SECURITY_GATE_PATH_FLV,
+    LIVE_STREAM_MONITOR_PATH_FLV,
+} from "../../configs/stream.config";
+import axiosInstance from "../../services/axios";
 
 const cx = classnames.bind(styles);
 
@@ -16,11 +20,16 @@ export default function Home() {
     const [temp, setTemp] = useState(0);
     const [humidity, setHumidity] = useState(0);
 
+    const updateData = async () => {
+        const { data } = await axiosInstance.get("/environment/get-info");
+
+        setTemp(data.temp);
+        setHumidity(data.humidity);
+    };
+
     useEffect(() => {
-        const intervalId = setInterval(async () => {
-            setTemp(30);
-            setHumidity(90);
-        }, DHT_DATA_UPDATE_TIME);
+        updateData();
+        const intervalId = setInterval(updateData, DHT_DATA_UPDATE_TIME);
 
         return () => clearInterval(intervalId);
     }, []);
@@ -31,9 +40,9 @@ export default function Home() {
                 title="Camera giám sát"
                 className={cx("camera-partial")}
             >
-                <CameraPreview url={LIVE_STREAM_PATH_FLV} />
+                <CameraPreview url={LIVE_STREAM_SECURITY_GATE_PATH_FLV} />
 
-                <CameraPreview url={LIVE_STREAM_PATH_FLV} />
+                <CameraPreview url={LIVE_STREAM_MONITOR_PATH_FLV} />
             </PartialWithTitle>
 
             <PartialWithTitle className={cx("sensor-partial")} title="Thông số">
