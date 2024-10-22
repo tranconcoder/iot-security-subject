@@ -13,6 +13,8 @@ export default function CameraPreview({ url, ...props }: CameraPreviewProps) {
         file: { forceFLV: true },
     };
 
+    console.log(url)
+
     return (
         <div className={cx("camera-preview-container")}>
             <ReactPlayer

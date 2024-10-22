@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
+import ChartPage from "../pages/Chart";
 
 // Pages
-import HomePage from "../pages/Home/index.page";
+import DashboardPage from "../pages/Dashboard/index.page";
 
 const router = createBrowserRouter([
     {
@@ -10,8 +11,10 @@ const router = createBrowserRouter([
     },
     {
         path: "/",
-        element: <HomePage />,
+        element: <DashboardPage />,
     },
+    { 
+path: "/chart", element: <ChartPage /> },
 ]);
 
 export default router;

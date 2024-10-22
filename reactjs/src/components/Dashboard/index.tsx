@@ -16,7 +16,7 @@ import axiosInstance from "../../services/axios";
 
 const cx = classnames.bind(styles);
 
-export default function Home() {
+export default function Dashboard() {
     const [temp, setTemp] = useState(0);
     const [humidity, setHumidity] = useState(0);
 
