@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnvironmentController = void 0;
 var environment_schema_1 = require("../config/database/schema/environment.schema");
+var handleError_config_1 = require("../config/handleError.config");
 var EnvironmentController = /** @class */ (function () {
     function EnvironmentController() {
     }
@@ -49,8 +50,7 @@ var EnvironmentController = /** @class */ (function () {
                     case 0: return [4 /*yield*/, environment_schema_1.EnvironmentModel.findOne({}, {}, { sort: { created_at: -1 } }).lean()];
                     case 1:
                         lastRecord = _a.sent();
-                        res.status(200).json(lastRecord);
-                        return [2 /*return*/];
+                        throw new handleError_config_1.RequestError(404, "Not found!~~~");
                 }
             });
         });
