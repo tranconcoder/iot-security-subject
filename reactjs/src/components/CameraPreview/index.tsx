@@ -15,7 +15,12 @@ export default function CameraPreview({ url }: CameraPreviewProps) {
 
     return (
         <div className={cx("camera-preview")}>
-            <ReactPlayer className={cx("preview")} url={url} config={config} />
+            <ReactPlayer
+                className={cx("preview")}
+                url={url}
+                config={config}
+                controls
+            />
         </div>
     );
 }

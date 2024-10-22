@@ -11,8 +11,10 @@ const cx = classnames.bind(styles);
 export default function Home() {
     return (
         <div className={cx("container")}>
-            <PartialWithTitle title="Camera giám sát">
-                <CameraPreview url="rtmp://wcub.uofdjesuit.org/live/wcub" />
+            <PartialWithTitle title="Camera giám sát" >
+                <CameraPreview url={LIVE_STREAM_PATH_FLV} />
+
+                <CameraPreview url={LIVE_STREAM_PATH_FLV} />
             </PartialWithTitle>
         </div>
     );
