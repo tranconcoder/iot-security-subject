@@ -1,16 +1,19 @@
 import styles from "./styles.module.scss";
 import classnames from "classnames/bind";
-import { PropsWithChildren } from "react";
+import { HTMLAttributes, ReactNode } from "react";
 
 const cx = classnames.bind(styles);
 
-export interface PartialWithTitleProps extends PropsWithChildren {
+export interface PartialWithTitleProps extends HTMLAttributes<HTMLDivElement>{
     title: string;
+           children: ReactNode
 }
 
 export default function PartialWithTitle({
     children,
     title,
+    className,
+    ...props
 }: PartialWithTitleProps) {
     return (
         <section className={cx("partial-container")}>
@@ -18,7 +21,7 @@ export default function PartialWithTitle({
 
             <div className={cx("line-break")}></div>
 
-            <div className={cx("content")}>{children}</div>
+            <div {...props} className={cx("content").addClass(className)}>{children}</div>
         </section>
     );
 }
