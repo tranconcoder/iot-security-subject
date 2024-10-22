@@ -5,6 +5,6 @@ const PASSWORD = process.env.MONGODB_ATLAS_PASSWORD;
 
 export default function connectDb() {
     return mongoose.connect(
-        `mongodb+srv://tranconcoder:${PASSWORD}@cluster0.vdsy1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+        `mongodb+srv://tranvanconkg:JAZpjGcNQlksfeuQ@cluster0.i74lv.mongodb.net/`
     );
 }

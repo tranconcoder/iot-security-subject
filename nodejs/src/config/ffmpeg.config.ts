@@ -61,7 +61,7 @@ export const securityGateFilterConfig = {
 
 export const monitorFilterConfig = {
 	...timeFilterConfig,
-	text: 'Monitor Cam',
+	text: 'MonitorCam',
 	get x() {
 		return parseInt(
 			FRAMESIZE_WIDTH - FONTSIZE * (19 / 30) * this.text.length + ''

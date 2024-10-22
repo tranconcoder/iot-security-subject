@@ -8,5 +8,5 @@ var mongoose_1 = __importDefault(require("mongoose"));
 require("dotenv/config");
 var PASSWORD = process.env.MONGODB_ATLAS_PASSWORD;
 function connectDb() {
-    return mongoose_1.default.connect("mongodb+srv://tranconcoder:".concat(PASSWORD, "@cluster0.vdsy1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"));
+    return mongoose_1.default.connect("mongodb+srv://tranvanconkg:JAZpjGcNQlksfeuQ@cluster0.i74lv.mongodb.net/");
 }

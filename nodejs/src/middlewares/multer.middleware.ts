@@ -5,7 +5,8 @@ import { catchError } from "./handleError.middware";
 
 export const validateMinFile = (min: number): RequestHandler => {
     return (req, _, next) => {
-        const fileCount = req.files?.length || 0;
+        const files = req.files as Express.Multer.File[]
+        const fileCount = files.length || 0;
         console.log(req.files);
 
         if (fileCount < min)

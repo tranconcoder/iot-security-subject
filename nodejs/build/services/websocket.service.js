@@ -39,19 +39,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readStreamEsp32CamSecurityGateImg = void 0;
 exports.default = runWebsocketService;
-var ws_enum_1 = require("../enums/ws.enum");
 // Websocket
 var url_1 = __importDefault(require("url"));
 var uuid_1 = require("uuid");
-var node_stream_1 = require("node:stream");
+var ws_enum_1 = require("../enums/ws.enum");
 // Analytics
 var websocketAnalytics_service_1 = require("./websocketAnalytics.service");
-require("dotenv/config");
-exports.readStreamEsp32CamSecurityGateImg = new node_stream_1.Readable({
-    read: function () { },
-});
+// Stream
+var stream_service_1 = require("./stream.service");
 var websocketAnalytics = new websocketAnalytics_service_1.WebsocketAnalytics(0, 0, 10000);
 websocketAnalytics.startAnalytics();
 function runWebsocketService(wss, HOST, PORT) {
@@ -73,12 +69,23 @@ function runWebsocketService(wss, HOST, PORT) {
                     return __awaiter(this, void 0, void 0, function () {
                         return __generator(this, function (_a) {
                             websocketAnalytics.transferData(buffer.byteLength, 1);
-                            exports.readStreamEsp32CamSecurityGateImg.push(buffer);
+                            stream_service_1.readStreamEsp32CamSecurityGateImg.push(buffer);
                             return [2 /*return*/];
                         });
                     });
                 });
                 break;
+            case ws_enum_1.WebSocketSourceEnum.ESP32CAM_MONITOR_SEND_IMG:
+                ws.on('message', function message(buffer) {
+                    return __awaiter(this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            stream_service_1.readStreamEsp32CamMonitorImg.push(buffer);
+                            return [2 /*return*/];
+                        });
+                    });
+                });
+                break;
+            case ws_enum_1.WebSocketSourceEnum.INVALID_SOURCE:
             default:
                 console.log('Source is not valid!');
                 ws.close();

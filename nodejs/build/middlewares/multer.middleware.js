@@ -6,8 +6,8 @@ var multer_config_1 = require("../config/multer.config");
 var handleError_middware_1 = require("./handleError.middware");
 var validateMinFile = function (min) {
     return function (req, _, next) {
-        var _a;
-        var fileCount = ((_a = req.files) === null || _a === void 0 ? void 0 : _a.length) || 0;
+        var files = req.files;
+        var fileCount = files.length || 0;
         console.log(req.files);
         if (fileCount < min)
             throw new handleError_config_1.RequestForbiddenError("Files count must be greater or equal than ".concat(min, "."));

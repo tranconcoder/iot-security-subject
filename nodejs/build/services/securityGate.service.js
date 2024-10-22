@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var env_config_1 = require("../config/env.config");
 var handleError_config_1 = require("../config/handleError.config");
-var websocket_service_1 = require("./websocket.service");
+var stream_service_1 = require("./stream.service");
 var SecurityGateServices = /** @class */ (function () {
     function SecurityGateServices() {
     }
@@ -64,9 +64,9 @@ var SecurityGateServices = /** @class */ (function () {
             var TRANSFER_TIMEOUT;
             return __generator(this, function (_a) {
                 TRANSFER_TIMEOUT = 5000;
-                websocket_service_1.readStreamEsp32CamSecurityGateImg.on('data', handleData);
+                stream_service_1.readStreamEsp32CamSecurityGateImg.on('data', handleData);
                 setTimeout(function () {
-                    websocket_service_1.readStreamEsp32CamSecurityGateImg.off('data', handleData);
+                    stream_service_1.readStreamEsp32CamSecurityGateImg.off('data', handleData);
                 }, TRANSFER_TIMEOUT);
                 return [2 /*return*/];
             });

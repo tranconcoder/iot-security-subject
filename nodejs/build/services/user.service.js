@@ -49,10 +49,10 @@ var UserServices = /** @class */ (function () {
                         formData = new FormData();
                         files.forEach(function (file) {
                             var blob = new Blob([file.buffer]);
-                            formData.append("faces[]", blob);
+                            formData.append('faces[]', blob);
                         });
                         path = "http://".concat(env_config_1.FACE_RECOGNITION_SERVER_HOST, ":").concat(env_config_1.FACE_RECOGNITION_SERVER_PORT, "/add");
-                        return [4 /*yield*/, fetch(path, { method: "POST", body: formData })];
+                        return [4 /*yield*/, fetch(path, { method: 'POST', body: formData })];
                     case 1:
                         res = _a.sent();
                         data = res.text();

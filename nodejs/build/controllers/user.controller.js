@@ -40,6 +40,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var user_service_1 = __importDefault(require("../services/user.service"));
+var handleError_config_1 = require("../config/handleError.config");
 var UserController = /** @class */ (function () {
     function UserController() {
     }
@@ -49,7 +50,9 @@ var UserController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         console.log(req.files);
-                        return [4 /*yield*/, user_service_1.default.addUser(req.files)];
+                        return [4 /*yield*/, user_service_1.default.addUser(req.files).catch(function () {
+                                throw new handleError_config_1.RequestError(400, 'Server error!');
+                            })];
                     case 1:
                         _a.sent();
                         res.status(200).json({ status: 200 });
