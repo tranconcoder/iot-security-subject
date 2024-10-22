@@ -4,11 +4,12 @@
 
   .box {
     @include size(120rem, false);
-    @include maxSize(calc(100vw - 3rem), calc(100vh - 3rem));
+    @include maxSize(calc(100vw - 3rem), calc(100vh - 14rem));
     background-color: $whiteColor;
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     border-radius: 1.6rem;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     .header {
       @include text($whiteColor, 2.4rem, 700);
