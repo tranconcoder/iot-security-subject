@@ -45,10 +45,12 @@ var ffmpegService = __importStar(require("./services/ffmpeg.service"));
 var morgan_1 = __importDefault(require("morgan"));
 // Mongoose
 var mongoose_config_1 = __importDefault(require("./config/database/mongoose.config"));
+var environment_schema_1 = require("./config/database/schema/environment.schema");
 // Error handler
 var handleError_util_1 = __importDefault(require("./utils/handleError.util"));
 // Environments
 var config_1 = require("./config");
+var number_util_1 = require("./utils/number.util");
 // Constants
 var HOST = config_1.envConfig.HOST, PORT = config_1.envConfig.PORT;
 exports.HOST = HOST;
@@ -66,7 +68,7 @@ exports.wss = wss;
 //
 // MORGAN
 //
-app.use((0, morgan_1.default)('tiny'));
+app.use((0, morgan_1.default)("tiny"));
 //
 // BODY PARSER
 //
@@ -77,7 +79,7 @@ app.use(body_parser_1.default.json());
 //
 // STATIC FILES
 //
-app.use('/public', express_1.default.static(path_1.default.join(__dirname, '../public')));
+app.use("/public", express_1.default.static(path_1.default.join(__dirname, "../public")));
 //
 // HANDLEBARS
 //
@@ -109,8 +111,12 @@ httpServer.listen(PORT, HOST, function () {
 //
 (0, mongoose_config_1.default)()
     .then(function () {
-    console.log('Connected to database!');
+    console.log("Connected to database!");
 })
     .catch(function () {
-    console.log('Connect fail to database!');
+    console.log("Connect fail to database!");
+});
+environment_schema_1.EnvironmentModel.create({
+    temp: (0, number_util_1.randomIntFromInterval)(0, 100),
+    humidity: (0, number_util_1.randomIntFromInterval)(0, 100),
 });

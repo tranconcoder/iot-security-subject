@@ -1,34 +1,36 @@
 // Express app
-import express from 'express';
-import handleRoute from './routes';
-import bodyParser from 'body-parser';
+import express from "express";
+import handleRoute from "./routes";
+import bodyParser from "body-parser";
 
 // Handlebars
-import path from 'path';
-import SetupHandlebars from './services/handlebars.service';
+import path from "path";
+import SetupHandlebars from "./services/handlebars.service";
 
 // Http server
-import { createServer } from 'http';
+import { createServer } from "http";
 
 // Websocket Server
-import runWebsocketService from './services/websocket.service';
-import { WebSocketServer } from 'ws';
+import runWebsocketService from "./services/websocket.service";
+import { WebSocketServer } from "ws";
 
 // Services
-import * as ffmpegService from './services/ffmpeg.service';
+import * as ffmpegService from "./services/ffmpeg.service";
 
 // Morgan
-import morgan from 'morgan';
+import morgan from "morgan";
 
 // Mongoose
-import connectDb from './config/database/mongoose.config';
+import connectDb from "./config/database/mongoose.config";
+import { EnvironmentModel } from "./config/database/schema/environment.schema";
 
 // Error handler
-import handleError from './utils/handleError.util';
+import handleError from "./utils/handleError.util";
 
 // Environments
-import { envConfig } from './config';
-import { MEDIA_SERVER_HOST } from './config/env.config';
+import { envConfig } from "./config";
+import { MEDIA_SERVER_HOST } from "./config/env.config";
+import { randomIntFromInterval } from "./utils/number.util";
 
 // Constants
 const { HOST, PORT } = envConfig;
@@ -37,15 +39,15 @@ const { HOST, PORT } = envConfig;
 const app = express();
 const httpServer = createServer(app);
 const wss = new WebSocketServer({
-	server: httpServer,
-	host: HOST,
-	maxPayload: 256 * 1024,
+    server: httpServer,
+    host: HOST,
+    maxPayload: 256 * 1024,
 });
 
 //
 // MORGAN
 //
-app.use(morgan('tiny'));
+app.use(morgan("tiny"));
 
 //
 // BODY PARSER
@@ -58,7 +60,7 @@ app.use(bodyParser.json());
 //
 // STATIC FILES
 //
-app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use("/public", express.static(path.join(__dirname, "../public")));
 
 //
 // HANDLEBARS
@@ -88,18 +90,23 @@ app.use(handleError);
 // START SERVER
 //
 httpServer.listen(PORT, HOST, () => {
-	console.log(`Server is running on http://${HOST}:${PORT}`);
+    console.log(`Server is running on http://${HOST}:${PORT}`);
 });
 
 //
 // MONGOOSE
 //
 connectDb()
-	.then(() => {
-		console.log('Connected to database!');
-	})
-	.catch(() => {
-		console.log('Connect fail to database!');
-	});
+    .then(() => {
+        console.log("Connected to database!");
+    })
+    .catch(() => {
+        console.log("Connect fail to database!");
+    });
+
+EnvironmentModel.create({
+    temp: randomIntFromInterval(0, 100),
+    humidity: randomIntFromInterval(0, 100),
+});
 
 export { wss, httpServer, HOST, PORT };
