@@ -5,7 +5,7 @@ import { catchError } from "./handleError.middware";
 
 export const validateMinFile = (min: number): RequestHandler => {
     return (req, _, next) => {
-        const files = req.files as Express.Multer.File[]
+        const files = req.files as Express.Multer.File[];
         const fileCount = files.length || 0;
         console.log(req.files);
 
@@ -21,6 +21,6 @@ export const validateMinFile = (min: number): RequestHandler => {
 export const uploadNewFacesMiddleware = [
     uploadNewFaces.array("faces"),
     validateMinFile(12),
-].map((fn) => catchError(fn));
+].map((fn: any) => catchError(fn));
 
 export const uploadRecognitionFaceMiddleware = uploadFace.single("face-img");

@@ -29,8 +29,10 @@ import handleError from "./utils/handleError.util";
 
 // Environments
 import { envConfig } from "./config";
-import { MEDIA_SERVER_HOST } from "./config/env.config";
 import { randomIntFromInterval } from "./utils/number.util";
+
+// Secure
+import cors from "cors"
 
 // Constants
 const { HOST, PORT } = envConfig;
@@ -43,6 +45,14 @@ const wss = new WebSocketServer({
     host: HOST,
     maxPayload: 256 * 1024,
 });
+
+
+//
+// CORS
+//
+app.use(cors({
+    origin: "*"
+}))
 
 //
 // MORGAN

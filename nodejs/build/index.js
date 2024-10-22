@@ -51,6 +51,8 @@ var handleError_util_1 = __importDefault(require("./utils/handleError.util"));
 // Environments
 var config_1 = require("./config");
 var number_util_1 = require("./utils/number.util");
+// Secure
+var cors_1 = __importDefault(require("cors"));
 // Constants
 var HOST = config_1.envConfig.HOST, PORT = config_1.envConfig.PORT;
 exports.HOST = HOST;
@@ -65,6 +67,12 @@ var wss = new ws_1.WebSocketServer({
     maxPayload: 256 * 1024,
 });
 exports.wss = wss;
+//
+// CORS
+//
+app.use((0, cors_1.default)({
+    origin: "*"
+}));
 //
 // MORGAN
 //
