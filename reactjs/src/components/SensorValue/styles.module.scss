@@ -1,0 +1,5 @@
+.sensor-value {
+  @include size(auto, false);
+  padding: 1rem;
+  border-radius: 1rem;
+}

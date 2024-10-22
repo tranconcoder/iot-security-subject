@@ -5,6 +5,7 @@ import PartialWithTitle from "../PartialWithTitle";
 import CameraPreview from "../CameraPreview";
 // Configs
 import { LIVE_STREAM_PATH_FLV } from "../../configs/stream.config";
+import SensorValue from "../SensorValue";
 
 const cx = classnames.bind(styles);
 
@@ -18,6 +19,10 @@ export default function Home() {
                 <CameraPreview url={LIVE_STREAM_PATH_FLV} />
 
                 <CameraPreview url={LIVE_STREAM_PATH_FLV} />
+            </PartialWithTitle>
+
+            <PartialWithTitle title="Thông số">
+                <SensorValue title="Nhiệt độ" value="25C"  />
             </PartialWithTitle>
         </div>
     );
