@@ -5,12 +5,15 @@ import { useState } from "react";
 
 const cx = classNames.bind(styles);
 
-export interface ChartDayProps {
+export interface ChartDayInfoProps {
     tempData: Array<number>;
     humidityData: Array<number>;
 }
 
-export default function ChartDay({ tempData, humidityData }: ChartDayProps) {
+export default function ChartDayInfo({
+    tempData,
+    humidityData,
+}: ChartDayInfoProps) {
     const [xLabels] = useState(() => {
         const xLabels = [];
 

@@ -1,5 +1,3 @@
-import styles from "./styles.module.scss";
-import classNames from "classnames/bind";
 import { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -9,19 +7,17 @@ import {
     PickerChangeHandlerContext,
 } from "@mui/x-date-pickers";
 
-const cx = classNames.bind(styles);
-
-export interface ChartSelectDayProps {
-    onChangeDay(
+export interface ChartDayPickerProps {
+    handlePick(
         newDay: Dayjs | null,
         context: PickerChangeHandlerContext<DateValidationError>
     ): void;
 }
 
-export default function ChartSelectDay({ onChangeDay }: ChartSelectDayProps) {
+export default function ChartDayPicker({ handlePick }: ChartDayPickerProps) {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <StaticDatePicker orientation="landscape" onChange={onChangeDay} />
+            <StaticDatePicker orientation="landscape" onChange={handlePick} />
         </LocalizationProvider>
     );
 }

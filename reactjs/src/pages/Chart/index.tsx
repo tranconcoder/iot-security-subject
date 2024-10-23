@@ -7,11 +7,11 @@ import { OutletPassType } from "../../components/layouts/BoxLayout";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { ChartTimeRangeEnum } from "../../enum/chart.enum";
-import ChartSelectDay from "../../components/ChartSelectDay";
-import ChartDay from "../../components/ChartDay";
-import ChartSelectMonth from "../../components/ChartSelectMonth";
 import ChartWeekPicker from "../../components/ChartWeekPicker";
 import ChartYearPicker from "../../components/ChartYearPicker";
+import ChartDayPicker from "../../components/ChartDayPicker";
+import ChartMonthPicker from "../../components/ChartMonthPicker";
+import ChartDayInfo from "../../components/ChartDayInfo";
 
 const cx = classNames.bind(styles);
 
@@ -34,17 +34,17 @@ export default function ChartPage() {
                 <ChartTimeRange onChangeTimeRange={handleChangeTimeRange} />
 
                 {timeRange === ChartTimeRangeEnum.Day && (
-                    <ChartSelectDay onChangeDay={() => {}} />
+                    <ChartDayPicker handlePick={() => {}} />
                 )}
 
                 {timeRange === ChartTimeRangeEnum.Week && <ChartWeekPicker />}
 
-                {timeRange === ChartTimeRangeEnum.Month && <ChartSelectMonth />}
+                {timeRange === ChartTimeRangeEnum.Month && <ChartMonthPicker handlePick={() => {}} />}
 
-                {timeRange === ChartTimeRangeEnum.Year&& <ChartYearPicker/>}
+                {timeRange === ChartTimeRangeEnum.Year && <ChartYearPicker handlePick={() => {}} />}
             </div>
 
-            <ChartDay
+            <ChartDayInfo
                 humidityData={[1, 2, 3, 4, 6, 6, 7]}
                 tempData={[1, 2, 4, 1, 4, 5, 6]}
             />
