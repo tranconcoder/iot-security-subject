@@ -79,7 +79,7 @@ function Day(
 }
 
 export interface ChartWeekPickerProps {
-    handlePick: (newWeek?: number) => void;
+handlePick: (newWeek: number, newYear: number) => void;
 }
 
 export default function ChartWeekPicker({ handlePick }: ChartWeekPickerProps) {
@@ -88,7 +88,7 @@ export default function ChartWeekPicker({ handlePick }: ChartWeekPickerProps) {
 
     const handleChange = (value: Dayjs) => {
         setValue(value);
-        handlePick(value.week());
+        handlePick(value.week(), value.year());
     };
 
     return (

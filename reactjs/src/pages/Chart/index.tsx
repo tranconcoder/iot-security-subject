@@ -14,7 +14,12 @@ import ChartDatePicker from "../../components/ChartDatePicker";
 import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { LineChart } from "@mui/x-charts";
-import { generateXLabelsDay } from "../../utils/chart.util";
+import {
+    generateXLabelsDay,
+    generateXLabelsMonth,
+    generateXLabelsWeek,
+    generateXLabelsYear,
+} from "../../utils/chart.util";
 
 const cx = classNames.bind(styles);
 
@@ -35,17 +40,19 @@ export default function ChartPage() {
     const handleChangeTimeRange = (newTimeRange: ChartTimeRangeEnum) => {
         setTimeRange(newTimeRange);
     };
-    const handlePickDate = (newDate?: number) => {
-        setDate(newDate || date);
+    const handlePickDate = (newDate: number) => {
+        setDate(newDate);
     };
-    const handlePickMonth = (newMonth?: number) => {
-        setMonth(newMonth || month);
+    const handlePickMonth = (newMonth: number, newYear: number) => {
+        setMonth(newMonth);
+        setYear(newYear);
     };
-    const handlePickYear = (newYear?: number) => {
-        setYear(newYear || year);
+    const handlePickYear = (newYear: number) => {
+        setYear(newYear);
     };
-    const handlePickWeek = (newWeek?: number) => {
-        setWeek(newWeek || week);
+    const handlePickWeek = (newWeek: number, newYear: number) => {
+        setWeek(newWeek);
+        setYear(newYear);
     };
 
     useEffect(() => {
@@ -53,8 +60,27 @@ export default function ChartPage() {
         setButtonProps(undefined);
     });
 
-    // Init time XAxes
-    useEffect(() => {}, [timeRange]);
+    // Update xLabels axes
+    useEffect(() => {
+        switch (timeRange) {
+            case ChartTimeRangeEnum.Day:
+                setXLabels(generateXLabelsDay());
+                break;
+            case ChartTimeRangeEnum.Week:
+                setXLabels(generateXLabelsWeek(week, year));
+                break;
+            case ChartTimeRangeEnum.Month:
+                setXLabels(generateXLabelsMonth(month + 1, year));
+                break;
+            case ChartTimeRangeEnum.Year:
+                setXLabels(generateXLabelsYear());
+        }
+    }, [timeRange, week, month, year]); // eslint-disable-line
+
+    // Update axes data
+    useEffect(() => {
+        console.log();
+    }, [timeRange, date, week, month, year]);
 
     return (
         <div className={cx("chart-container")}>

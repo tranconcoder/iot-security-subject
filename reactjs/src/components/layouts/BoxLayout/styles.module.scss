@@ -1,10 +1,10 @@
 .container {
   @include size(100vw, 100vh);
-  @include flex(column, center, center);
+  @include flexCenter();
 
   .box {
-    @include size(120rem, false);
-    @include maxSize(calc(100vw - 3rem), calc(100vh - 14rem));
+    @include size(140rem, false);
+    @include maxSize(calc(100vw - 8rem), calc(100vh - 10rem));
     background-color: $whiteColor;
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     border-radius: 1.6rem;

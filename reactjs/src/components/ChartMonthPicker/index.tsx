@@ -3,16 +3,16 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { useState } from "react";
 
-export interface ChartMonthPicker {
-    handlePick: (month: number) => void;
+export interface ChartMonthPickerProps {
+    handlePick: (month: number, year: number) => void;
 }
 
-export default function ChartMonthPicker({ handlePick }: ChartMonthPicker) {
+export default function ChartMonthPicker({ handlePick }: ChartMonthPickerProps) {
     const [month, setMonth] = useState<Dayjs>(dayjs());
 
     const handleChange = (data: Dayjs) => {
         setMonth(data);
-        handlePick(data.month())
+        handlePick(data.month(), data.year());
     };
 
     return (
