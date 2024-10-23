@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
-import { EnvironmentModel } from "../config/database/schema/environment.schema";
+import type { Date } from "../types/date";
+
 import { getInfoEnvironmentParamSchema } from "../config/joiSchema/getInfoEnvironment.joiSchema";
+import EnvironmentServices from "../services/environment.service";
 
 export class EnvironmentController {
     public static async getInfo(
@@ -8,16 +10,10 @@ export class EnvironmentController {
         res: Response,
         next: NextFunction
     ) {
-        const date = await getInfoEnvironmentParamSchema.validateAsync(
-            req.params
+        const date: Date = await getInfoEnvironmentParamSchema.validateAsync(
+            req.query
         );
 
-        const lastInfo = await EnvironmentModel.findOne(
-            {},
-            {},
-            { sort: { created_at: -1 } }
-        ).lean();
-
-        res.status(200).json(lastInfo);
+        res.status(200).json(await EnvironmentServices.getInfo(date));
     }
 }
