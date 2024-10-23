@@ -6,8 +6,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { PickersDay, PickersDayProps } from "@mui/x-date-pickers/PickersDay";
+import weekOfYear from "dayjs/plugin/weekOfYear";
 
 dayjs.extend(isBetweenPlugin);
+dayjs.extend(weekOfYear);
 
 interface CustomPickerDayProps extends PickersDayProps<Dayjs> {
     isSelected: boolean;
@@ -76,15 +78,24 @@ function Day(
     );
 }
 
-export default function ChartWeekPicker() {
+export interface ChartWeekPickerProps {
+    handlePick: (newWeek?: number) => void;
+}
+
+export default function ChartWeekPicker({ handlePick }: ChartWeekPickerProps) {
     const [hoveredDay, setHoveredDay] = React.useState<Dayjs | null>(null);
     const [value, setValue] = React.useState<Dayjs | null>(dayjs());
+
+    const handleChange = (value: Dayjs) => {
+        setValue(value);
+        handlePick(value.week());
+    };
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateCalendar
                 value={value}
-                onChange={(newValue) => setValue(newValue)}
+                onChange={handleChange}
                 showDaysOutsideCurrentMonth
                 displayWeekNumber
                 slots={{ day: Day }}
