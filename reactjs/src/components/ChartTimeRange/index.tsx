@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ChartTimeRangeEnum } from "../../enum/chart.enum";
-import ChartSelectDay from "../ChartSelectDay";
 
 export interface ChartTimeRangeProps extends FormControlOwnProps {
     onChangeTimeRange: (timeRange: ChartTimeRangeEnum) => void;

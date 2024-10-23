@@ -20,13 +20,8 @@ export interface ChartSelectDayProps {
 
 export default function ChartSelectDay({ onChangeDay }: ChartSelectDayProps) {
     return (
-        <div>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <StaticDatePicker
-                    orientation="landscape"
-                    onChange={onChangeDay}
-                />
-            </LocalizationProvider>
-        </div>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <StaticDatePicker orientation="landscape" onChange={onChangeDay} />
+        </LocalizationProvider>
     );
 }

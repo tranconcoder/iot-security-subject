@@ -9,7 +9,9 @@ import { useOutletContext } from "react-router-dom";
 import { ChartTimeRangeEnum } from "../../enum/chart.enum";
 import ChartSelectDay from "../../components/ChartSelectDay";
 import ChartDay from "../../components/ChartDay";
-import { DateTimeField } from "@mui/x-date-pickers";
+import ChartSelectMonth from "../../components/ChartSelectMonth";
+import ChartWeekPicker from "../../components/ChartWeekPicker";
+import ChartYearPicker from "../../components/ChartYearPicker";
 
 const cx = classNames.bind(styles);
 
@@ -35,6 +37,11 @@ export default function ChartPage() {
                     <ChartSelectDay onChangeDay={() => {}} />
                 )}
 
+                {timeRange === ChartTimeRangeEnum.Week && <ChartWeekPicker />}
+
+                {timeRange === ChartTimeRangeEnum.Month && <ChartSelectMonth />}
+
+                {timeRange === ChartTimeRangeEnum.Year&& <ChartYearPicker/>}
             </div>
 
             <ChartDay
