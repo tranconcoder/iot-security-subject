@@ -1,6 +1,6 @@
-import { LineChart } from "@mui/x-charts/LineChart";
 import { useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
+import ChartTimeRange from "../../components/ChartTimeRange";
 import { OutletPassType } from "../../components/layouts/BoxLayout";
 
 export default function ChartPage() {
@@ -12,16 +12,8 @@ export default function ChartPage() {
     });
 
     return (
-        <LineChart
-            xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-            series={[
-                {
-                    data: [2, 5.5, 2, 8.5, 1.5, 5],
-                    area: true,
-                },
-            ]}
-            width={500}
-            height={300}
-        />
+        <div>
+            <ChartTimeRange />
+        </div>
     );
 }
