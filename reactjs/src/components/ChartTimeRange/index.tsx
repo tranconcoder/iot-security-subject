@@ -1,5 +1,3 @@
-import styles from "./styles.module.scss";
-import classnames from "classnames";
 import {
     FormControl,
     FormControlOwnProps,
@@ -8,14 +6,17 @@ import {
     Select,
     SelectChangeEvent,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChartTimeRangeEnum } from "../../enum/chart.enum";
 
-const cx = classnames.bind(styles);
+export interface ChartTimeRangeProps extends FormControlOwnProps {
+    onChangeTimeRange: (timeRange: ChartTimeRangeEnum) => void;
+}
 
-export interface ChartTimeRangeProps extends FormControlOwnProps {}
-
-export default function ChartTimeRange(props: ChartTimeRangeProps) {
+export default function ChartTimeRange({
+    onChangeTimeRange,
+    ...props
+}: ChartTimeRangeProps) {
     const [timeRange, setTimeRange] = useState<ChartTimeRangeEnum>(
         ChartTimeRangeEnum.Day
     );
@@ -23,18 +24,20 @@ export default function ChartTimeRange(props: ChartTimeRangeProps) {
     const handleChangeTimeRange = (
         e: SelectChangeEvent<ChartTimeRangeEnum>
     ) => {
-        setTimeRange(e.target.value as ChartTimeRangeEnum);
-    };
-    const menuItemStyles = {
-        fontSize: "1.2rem",
-    };
-    const labelStyles = {
-        fontSize: "1.4rem",
+        const newTimeRange = e.target.value as ChartTimeRangeEnum;
+
+        setTimeRange(newTimeRange);
+        onChangeTimeRange(newTimeRange);
     };
 
+    // Pass default timeRange to parent
+    useEffect(() => {
+        onChangeTimeRange(timeRange);
+    }, []); // eslint-disable-line
+
     return (
-        <FormControl {...props} sx={{ m: 2, minWidth: 120 }}>
-            <InputLabel id="demo-simple-select-filled-label" sx={labelStyles}>
+        <FormControl {...props} sx={{ m: 2, minWidth: 150 }}>
+            <InputLabel id="demo-simple-select-filled-label">
                 Thời gian
             </InputLabel>
 
@@ -44,20 +47,11 @@ export default function ChartTimeRange(props: ChartTimeRangeProps) {
                 onChange={handleChangeTimeRange}
                 value={timeRange}
                 label="Thời gian"
-                sx={labelStyles}
             >
-                <MenuItem sx={menuItemStyles} value={ChartTimeRangeEnum.Day}>
-                    Ngày
-                </MenuItem>
-                <MenuItem sx={menuItemStyles} value={ChartTimeRangeEnum.Week}>
-                    Tuần
-                </MenuItem>
-                <MenuItem sx={menuItemStyles} value={ChartTimeRangeEnum.Month}>
-                    Tháng
-                </MenuItem>
-                <MenuItem sx={menuItemStyles} value={ChartTimeRangeEnum.Year}>
-                    Năm
-                </MenuItem>
+                <MenuItem value={ChartTimeRangeEnum.Day}>Ngày</MenuItem>
+                <MenuItem value={ChartTimeRangeEnum.Week}>Tuần</MenuItem>
+                <MenuItem value={ChartTimeRangeEnum.Month}>Tháng</MenuItem>
+                <MenuItem value={ChartTimeRangeEnum.Year}>Năm</MenuItem>
             </Select>
         </FormControl>
     );

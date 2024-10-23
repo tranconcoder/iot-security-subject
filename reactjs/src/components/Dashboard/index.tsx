@@ -56,7 +56,7 @@ export default function Dashboard() {
                 title="Camera giám sát"
                 className={cx("camera-partial")}
             >
-                <CameraPreview url={LIVE_STREAM_SECURITY_GATE_PATH_FLV} />
+                <CameraPreview url={LIVE_STREAM_MONITOR_PATH_FLV} />
 
                 <CameraPreview url={LIVE_STREAM_MONITOR_PATH_FLV} />
             </PartialWithTitle>
