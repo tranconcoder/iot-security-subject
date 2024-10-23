@@ -4,18 +4,21 @@ import classNames from "classnames/bind";
 import ChartTimeRange from "../../components/ChartTimeRange";
 import { OutletPassType } from "../../components/layouts/BoxLayout";
 // Hooks
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { ChartTimeRangeEnum } from "../../enum/chart.enum";
+import ChartSelectDay from "../../components/ChartSelectDay";
 import ChartDay from "../../components/ChartDay";
+import { DateTimeField } from "@mui/x-date-pickers";
 
 const cx = classNames.bind(styles);
 
 export default function ChartPage() {
     const [setTitle, setButtonProps] = useOutletContext<OutletPassType>();
+    const [timeRange, setTimeRange] = useState<ChartTimeRangeEnum>();
 
-    const handleChangeTimeRange = (timeRange: ChartTimeRangeEnum) => {
-        console.log(timeRange);
+    const handleChangeTimeRange = (newTimeRange: ChartTimeRangeEnum) => {
+        setTimeRange(newTimeRange);
     };
 
     useEffect(() => {
@@ -25,9 +28,19 @@ export default function ChartPage() {
 
     return (
         <div className={cx("chart-container")}>
-            <ChartTimeRange onChangeTimeRange={handleChangeTimeRange} />
+            <div className={cx("chart-option")}>
+                <ChartTimeRange onChangeTimeRange={handleChangeTimeRange} />
 
-            <ChartDay tempData={[1,2,3]} humidityData={[12,3,12]} />
+                {timeRange === ChartTimeRangeEnum.Day && (
+                    <ChartSelectDay onChangeDay={() => {}} />
+                )}
+
+            </div>
+
+            <ChartDay
+                humidityData={[1, 2, 3, 4, 6, 6, 7]}
+                tempData={[1, 2, 4, 1, 4, 5, 6]}
+            />
         </div>
     );
 }

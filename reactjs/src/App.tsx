@@ -10,13 +10,17 @@ import "@fontsource/roboto/700.css";
 import { RouterProvider } from "react-router";
 import router from "./configs/routes.config";
 import { createTheme, ThemeProvider } from "@mui/material";
+import { viVN } from "@mui/x-date-pickers/locales";
 
-const theme = createTheme({
-    typography: {
-        fontFamily: "Arial",
-        fontSize: 20,
+const theme = createTheme(
+    {
+        typography: {
+            fontFamily: "Arial",
+            fontSize: 20,
+        },
     },
-});
+    viVN
+);
 
 function App() {
     return (
