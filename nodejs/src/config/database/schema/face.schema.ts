@@ -14,4 +14,6 @@ const faceSchema = new Schema({
     },
 });
 
-export const FaceModel = mongoose.model("Face", faceSchema);
+const FaceModel = mongoose.model("Face", faceSchema);
+
+export default FaceModel

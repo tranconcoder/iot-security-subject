@@ -4,6 +4,9 @@ import { catchError } from "../middlewares/handleError.middware";
 
 const environmentRouter = Router();
 
-environmentRouter.get("/get-info", catchError(EnvironmentController.getInfo));
+environmentRouter.get(
+    "/get-info/:year/:month/:date",
+    catchError(EnvironmentController.getInfo)
+);
 
 export default environmentRouter;

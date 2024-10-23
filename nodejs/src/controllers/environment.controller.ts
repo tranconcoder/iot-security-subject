@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { EnvironmentModel } from "../config/database/schema/environment.schema";
+import { getInfoEnvironmentParamSchema } from "../config/joiSchema/getInfoEnvironment.joiSchema";
 
 export class EnvironmentController {
     public static async getInfo(
@@ -7,6 +8,10 @@ export class EnvironmentController {
         res: Response,
         next: NextFunction
     ) {
+        const date = await getInfoEnvironmentParamSchema.validateAsync(
+            req.params
+        );
+
         const lastInfo = await EnvironmentModel.findOne(
             {},
             {},
