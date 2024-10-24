@@ -1,20 +1,30 @@
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// Components
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
+// Hooks
+import { useState } from "react";
 
 export interface ChartDatePickerProps {
-    handlePick(newDay?: number): void;
+    handlePick(newDay: number, newMonth: number, newYear: number): void;
 }
 
 export default function ChartDatePicker({ handlePick }: ChartDatePickerProps) {
-    const handleChange = (newDay: Dayjs | null) => {
-        handlePick(newDay?.date());
+    const [date, setDate] = useState<Dayjs>(dayjs());
+
+    const handleChange = (data: any) => {
+        setDate(data);
+        handlePick(data.date(), data.month(), data.year());
     };
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <StaticDatePicker orientation="landscape" onChange={handleChange} />
+            <StaticDatePicker
+                orientation="landscape"
+                value={date}
+                onChange={handleChange}
+            />
         </LocalizationProvider>
     );
 }

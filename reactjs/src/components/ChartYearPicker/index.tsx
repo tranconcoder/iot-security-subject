@@ -17,7 +17,7 @@ export default function ChartYearPicker({ handlePick }: ChartYearPickerProps) {
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <YearCalendar value={year} onChange={handleChange} />
+            <YearCalendar value={year} onChange={handleChange} maxDate={dayjs()} />
         </LocalizationProvider>
     );
 }

@@ -11,15 +11,21 @@ import ChartYearPicker from "../../components/ChartYearPicker";
 import ChartMonthPicker from "../../components/ChartMonthPicker";
 import ChartDatePicker from "../../components/ChartDatePicker";
 // Hooks
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { LineChart } from "@mui/x-charts";
 import {
+    convertEnvironmentSchemaListToDayAxesData,
+    convertEnvironmentSchemaListToMonthAxesData,
+    convertEnvironmentSchemaListToWeekAxesData,
+    convertEnvironmentSchemaListToYearAxesData,
+    generateParamsToGetInfo,
     generateXLabelsDay,
     generateXLabelsMonth,
     generateXLabelsWeek,
     generateXLabelsYear,
 } from "../../utils/chart.util";
+import axiosInstance from "../../services/axios";
 
 const cx = classNames.bind(styles);
 
@@ -40,8 +46,14 @@ export default function ChartPage() {
     const handleChangeTimeRange = (newTimeRange: ChartTimeRangeEnum) => {
         setTimeRange(newTimeRange);
     };
-    const handlePickDate = (newDate: number) => {
+    const handlePickDate = (
+        newDate: number,
+        newMonth: number,
+        newYear: number
+    ) => {
         setDate(newDate);
+        setMonth(newMonth);
+        setYear(newYear);
     };
     const handlePickMonth = (newMonth: number, newYear: number) => {
         setMonth(newMonth);
@@ -61,26 +73,46 @@ export default function ChartPage() {
     });
 
     // Update xLabels axes
-    useEffect(() => {
-        switch (timeRange) {
-            case ChartTimeRangeEnum.Day:
-                setXLabels(generateXLabelsDay());
-                break;
-            case ChartTimeRangeEnum.Week:
-                setXLabels(generateXLabelsWeek(week, year));
-                break;
-            case ChartTimeRangeEnum.Month:
-                setXLabels(generateXLabelsMonth(month + 1, year));
-                break;
-            case ChartTimeRangeEnum.Year:
-                setXLabels(generateXLabelsYear());
-        }
-    }, [timeRange, week, month, year]); // eslint-disable-line
-
     // Update axes data
     useEffect(() => {
-        console.log();
-    }, [timeRange, date, week, month, year]);
+        axiosInstance
+            .get("/environment/get-info", {
+                params: generateParamsToGetInfo(
+                    timeRange,
+                    date,
+                    week,
+                    month,
+                    year
+                ),
+            })
+            .then(({ data }) => {
+                let axesData: {
+                    tempData: Array<number>;
+                    humidityData: Array<number>;
+                } = { tempData: [], humidityData: [] };
+
+                if (timeRange === ChartTimeRangeEnum.Day) {
+                    axesData = convertEnvironmentSchemaListToDayAxesData(data);
+                    setXLabels(generateXLabelsDay());
+                }
+                if (timeRange === ChartTimeRangeEnum.Week) {
+                    axesData = convertEnvironmentSchemaListToWeekAxesData(data);
+                    setXLabels(generateXLabelsWeek(week, year));
+                }
+                if (timeRange === ChartTimeRangeEnum.Month) {
+                    axesData =
+                        convertEnvironmentSchemaListToMonthAxesData(data);
+                    setXLabels(generateXLabelsMonth(month + 1, year));
+                }
+                if (timeRange === ChartTimeRangeEnum.Year) {
+                    axesData = convertEnvironmentSchemaListToYearAxesData(data);
+                    setXLabels(generateXLabelsYear());
+                }
+
+                setTempData(axesData.tempData);
+                setHumidityData(axesData.humidityData);
+            });
+    }, [timeRange, date, week, month, year]); // eslint-disable-line
 
     return (
         <div className={cx("chart-container")}>
@@ -113,12 +145,14 @@ export default function ChartPage() {
                         label: "Nhiệt độ",
                         yAxisId: "leftAxisId",
                         color: "#ff6666",
+                        area: true,
                     },
                     {
                         data: humidityData,
                         label: "Độ ẩm",
                         yAxisId: "rightAxisId",
                         color: "#0066ff",
+                        area: true,
                     },
                 ]}
                 xAxis={[{ scaleType: "point", data: xLabels }]}

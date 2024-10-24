@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+import { ChartTimeRangeEnum } from "../enum/chart.enum";
+import { EnvironmentSchema } from "../types/environment";
 
 export const generateXLabelsDay = () => {
     const hoursArray = [];
@@ -55,3 +57,153 @@ export const generateXLabelsMonth = (month: number, year: number) => {
 
 export const generateXLabelsYear = () =>
     Array.from({ length: 12 }, (_, k) => k + 1 + "");
+
+export const convertEnvironmentSchemaListToDayAxesData = (
+    environmentList: Array<EnvironmentSchema>
+) => {
+    const tempDataGroupByHour = Array(24).fill(0);
+    const humidityDataGroupByHour = Array(24).fill(0);
+    const tempCountGroupByHour = Array(24).fill(0);
+    const humidityCountGroupByHour = Array(24).fill(0);
+
+    environmentList.forEach((item) => {
+        const hour = new Date(item.created_at).getHours();
+
+        tempDataGroupByHour[hour] += item.temp;
+        humidityDataGroupByHour[hour] += item.humidity;
+        tempCountGroupByHour[hour]++;
+        humidityCountGroupByHour[hour]++;
+    });
+    console.log({ tempDataGroupByHour, tempCountGroupByHour });
+
+    const tempDataAvgGroupByHour = tempDataGroupByHour.map(
+        (x, i) => x / tempCountGroupByHour[i] || 0
+    );
+    const humidityDataAvgGroupByHour = humidityDataGroupByHour.map(
+        (x, i) => x / humidityDataGroupByHour[i] || 0
+    );
+
+    return {
+        tempData: tempDataAvgGroupByHour,
+        humidityData: humidityDataAvgGroupByHour,
+    };
+};
+
+export const convertEnvironmentSchemaListToWeekAxesData = (
+    environmentList: Array<EnvironmentSchema>
+) => {
+    const tempDataGroupByDay: Array<number> = Array(7).fill(0);
+    const humidityDataGroupByDay: Array<number> = Array(7).fill(0);
+    const tempCountGroupByDay: Array<number> = Array(7).fill(0);
+    const humidityCountGroupByDay: Array<number> = Array(7).fill(0);
+
+    environmentList.forEach((item) => {
+        const day = new Date(item.created_at).getDay();
+
+        tempDataGroupByDay[day] += item.temp;
+        humidityDataGroupByDay[day] += item.humidity;
+        tempCountGroupByDay[day]++;
+        humidityCountGroupByDay[day]++;
+    });
+    const tempDataAvgGroupByDay = tempDataGroupByDay.map(
+        (x, i) => x / tempCountGroupByDay[i] || 0
+    );
+    const humidityDataAvgGroupByDay = humidityDataGroupByDay.map(
+        (x, i) => x / humidityCountGroupByDay[i] || 0
+    );
+
+    return {
+        tempData: tempDataAvgGroupByDay,
+        humidityData: humidityDataAvgGroupByDay,
+    };
+};
+
+export const convertEnvironmentSchemaListToMonthAxesData = (
+    environmentList: Array<EnvironmentSchema>
+) => {
+    const dateCountOfMonth = dayjs(environmentList[0].created_at).daysInMonth();
+    const tempDataGroupByDate: Array<number> = Array(dateCountOfMonth).fill(0);
+    const humidityDataGroupByDate: Array<number> =
+        Array(dateCountOfMonth).fill(0);
+    const tempCountGroupByDate: Array<number> = Array(dateCountOfMonth).fill(0);
+    const humidityCountGroupByDate: Array<number> =
+        Array(dateCountOfMonth).fill(0);
+
+    environmentList.forEach((item) => {
+        const date = new Date(item.created_at).getDate();
+
+        tempDataGroupByDate[date - 1] += item.temp;
+        humidityDataGroupByDate[date - 1] += item.humidity;
+        tempCountGroupByDate[date - 1]++;
+        humidityCountGroupByDate[date - 1]++;
+    });
+
+    const tempDataAvgGroupByDate = tempDataGroupByDate.map(
+        (x, i) => x / tempCountGroupByDate[i] || 0
+    );
+    const humidityDataAvgGroupByDate = humidityDataGroupByDate.map(
+        (x, i) => x / humidityCountGroupByDate[i] || 0
+    );
+
+    return {
+        tempData: tempDataAvgGroupByDate,
+        humidityData: humidityDataAvgGroupByDate,
+    };
+};
+
+export const convertEnvironmentSchemaListToYearAxesData = (
+    environmentList: Array<EnvironmentSchema>
+) => {
+    const tempDataGroupByMonth: Array<number> = Array(12).fill(0);
+    const humidityDataGroupByMonth: Array<number> = Array(12).fill(0);
+    const tempCountGroupByMonth: Array<number> = Array(12).fill(0);
+    const humidityCountGroupByMonth: Array<number> = Array(12).fill(0);
+    console.log(environmentList)
+
+    environmentList.forEach((item) => {
+        const month = new Date(item.created_at).getMonth();
+
+        tempDataGroupByMonth[month] += item.temp;
+        humidityDataGroupByMonth[month] += item.humidity;
+        tempCountGroupByMonth[month]++;
+        humidityCountGroupByMonth[month]++;
+    });
+
+    const tempDataAvgGroupByMonth = tempDataGroupByMonth.map(
+        (x, i) => x / tempCountGroupByMonth[i] || 0
+    );
+    const humidityDataAvgGroupByMonth = humidityDataGroupByMonth.map(
+        (x, i) => x / humidityCountGroupByMonth[i] || 0
+    );
+
+    return {
+        tempData: tempDataAvgGroupByMonth,
+        humidityData: humidityDataAvgGroupByMonth,
+    };
+};
+
+export const generateParamsToGetInfo = (
+    timeRange: ChartTimeRangeEnum,
+    day: number,
+    week: number,
+    month: number,
+    year: number
+) => {
+    switch (timeRange) {
+        case ChartTimeRangeEnum.Day:
+            return {
+                day,
+                month: month + 1,
+                year,
+            };
+
+        case ChartTimeRangeEnum.Week:
+            return { week, year };
+
+        case ChartTimeRangeEnum.Month:
+            return { month: month + 1, year };
+
+        case ChartTimeRangeEnum.Year:
+            return { year };
+    }
+};
