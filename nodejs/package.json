@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm-run-all --parallel nodemon nodemon-copy-hbs sass",
-    "product": "ls ; pwd",
+    "product": "ls ; pwd ; node ./build/index.js",
     "nodemon": "nodemon",
     "nodemon-copy-hbs": "nodemon --watch ./src --ext hbs --exec 'npx copyfiles -u 1 src/views/**/*.hbs src/assets/**/* ./build '",
     "sass": "sass -w src/assets/scss:public/css/",
