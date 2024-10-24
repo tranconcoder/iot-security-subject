@@ -8,7 +8,7 @@
     "nodemon": "nodemon",
     "nodemon-copy-hbs": "nodemon --watch ./src --ext hbs --exec 'npx copyfiles -u 1 src/views/**/*.hbs src/assets/**/* ./build '",
     "sass": "sass -w src/assets/scss:public/css/",
-    "build": "npx rimraf ./build ; npx tsc ; npx copyfiles -u 1 src/views/**/*.hbs src/assets/**/* ./build"
+    "build": "npm i ; npx rimraf ./build ; npx tsc ; npx copyfiles -u 1 src/views/**/*.hbs src/assets/**/* ./build"
   },
   "author": "",
   "license": "ISC",
@@ -38,7 +38,7 @@
     "mysql2": "^3.11.3",
     "node-ffmpeg-stream": "^1.1.0",
     "sharp": "^0.33.5",
-    "typescript": "^5.6.3",
+    "typescript": "^5.5.4",
     "uuid": "^10.0.0",
     "ws": "^8.18.0"
   },
