@@ -1,11 +1,14 @@
 import dayjs, { Dayjs } from "dayjs";
 import { EnvironmentModel } from "../config/database/schema/environment.schema";
 import { Date } from "../types/date";
+import weekOfYear from "dayjs/plugin/weekOfYear";
+
+dayjs.extend(weekOfYear);
 
 export default class EnvironmentServices {
     public static async getInfo(date: Date) {
-        let start: Dayjs, end: Dayjs;
         console.log(date);
+        let start: Dayjs, end: Dayjs;
 
         // Query by fullDate
         switch (true) {
@@ -15,6 +18,13 @@ export default class EnvironmentServices {
                 );
                 start = fullDate.startOf("day");
                 end = fullDate.endOf("day");
+                break;
+            case !!date.week:
+                const weekDate = dayjs()
+                    .year(date.year)
+                    .week(date.week as number);
+                start = weekDate.startOf("week");
+                end = weekDate.endOf("week");
                 break;
             case !!date.month:
                 // Query by month
