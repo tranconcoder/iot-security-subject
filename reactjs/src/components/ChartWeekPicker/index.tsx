@@ -94,6 +94,7 @@ export default function ChartWeekPicker({ handlePick }: ChartWeekPickerProps) {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateCalendar
+            maxDate={dayjs()}
                 value={value}
                 onChange={handleChange}
                 showDaysOutsideCurrentMonth

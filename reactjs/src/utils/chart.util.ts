@@ -158,7 +158,6 @@ export const convertEnvironmentSchemaListToYearAxesData = (
     const humidityDataGroupByMonth: Array<number> = Array(12).fill(0);
     const tempCountGroupByMonth: Array<number> = Array(12).fill(0);
     const humidityCountGroupByMonth: Array<number> = Array(12).fill(0);
-    console.log(environmentList)
 
     environmentList.forEach((item) => {
         const month = new Date(item.created_at).getMonth();

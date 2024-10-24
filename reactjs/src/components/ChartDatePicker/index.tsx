@@ -24,6 +24,7 @@ export default function ChartDatePicker({ handlePick }: ChartDatePickerProps) {
                 orientation="landscape"
                 value={date}
                 onChange={handleChange}
+                maxDate={dayjs()}
             />
         </LocalizationProvider>
     );
