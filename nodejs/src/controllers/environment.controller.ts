@@ -16,4 +16,8 @@ export class EnvironmentController {
 
         res.status(200).json(await EnvironmentServices.getInfo(date));
     }
+
+    public static async getCurrentInfo(req: Request, res: Response, next: NextFunction) {
+        res.status(200).json(await EnvironmentServices.getCurrentInfo())
+    }
 }

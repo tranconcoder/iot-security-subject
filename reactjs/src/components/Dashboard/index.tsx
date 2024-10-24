@@ -27,7 +27,7 @@ export default function Dashboard() {
     const [humidity, setHumidity] = useState(0);
 
     const updateData = async () => {
-        const { data } = await axiosInstance.get("/environment/get-info");
+        const { data } = await axiosInstance.get("/environment/get-current-info");
 
         setTemp(data.temp);
         setHumidity(data.humidity);

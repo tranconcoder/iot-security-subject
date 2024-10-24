@@ -2,12 +2,12 @@ import dayjs, { Dayjs } from "dayjs";
 import { EnvironmentModel } from "../config/database/schema/environment.schema";
 import { Date } from "../types/date";
 import weekOfYear from "dayjs/plugin/weekOfYear";
+import _ from "lodash"
 
 dayjs.extend(weekOfYear);
 
 export default class EnvironmentServices {
     public static async getInfo(date: Date) {
-        console.log(date);
         let start: Dayjs, end: Dayjs;
 
         // Query by fullDate
@@ -44,8 +44,18 @@ export default class EnvironmentServices {
                 $gte: start,
                 $lte: end,
             },
-        });
+        }).lean();
 
         return environmentData;
+    }
+
+    public static async getCurrentInfo() {
+        const data = await EnvironmentModel.findOne(
+            {},
+            {},
+            { sort: { created_at: -1 } }
+        ).lean();
+
+        return _.pick(data, ["temp", "humidity"]);
     }
 }

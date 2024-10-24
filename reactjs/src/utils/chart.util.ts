@@ -74,13 +74,12 @@ export const convertEnvironmentSchemaListToDayAxesData = (
         tempCountGroupByHour[hour]++;
         humidityCountGroupByHour[hour]++;
     });
-    console.log({ tempDataGroupByHour, tempCountGroupByHour });
 
     const tempDataAvgGroupByHour = tempDataGroupByHour.map(
         (x, i) => x / tempCountGroupByHour[i] || 0
     );
     const humidityDataAvgGroupByHour = humidityDataGroupByHour.map(
-        (x, i) => x / humidityDataGroupByHour[i] || 0
+        (x, i) => x / humidityCountGroupByHour[i] || 0
     );
 
     return {
@@ -121,6 +120,12 @@ export const convertEnvironmentSchemaListToWeekAxesData = (
 export const convertEnvironmentSchemaListToMonthAxesData = (
     environmentList: Array<EnvironmentSchema>
 ) => {
+    if (environmentList.length === 0)
+        return {
+            tempData: [],
+            humidityData: [],
+        };
+
     const dateCountOfMonth = dayjs(environmentList[0].created_at).daysInMonth();
     const tempDataGroupByDate: Array<number> = Array(dateCountOfMonth).fill(0);
     const humidityDataGroupByDate: Array<number> =
@@ -128,6 +133,7 @@ export const convertEnvironmentSchemaListToMonthAxesData = (
     const tempCountGroupByDate: Array<number> = Array(dateCountOfMonth).fill(0);
     const humidityCountGroupByDate: Array<number> =
         Array(dateCountOfMonth).fill(0);
+
 
     environmentList.forEach((item) => {
         const date = new Date(item.created_at).getDate();
