@@ -27,7 +27,7 @@ FACTOR = 0.709
 IMAGE_SIZE = 182
 INPUT_IMAGE_SIZE = 160
 CLASSIFIER_PATH = 'Models/facemodel.pkl'
-FACENET_MODEL_PATH = 'Models/20180402-114759.pb'
+FACENET_MODEL_PATH = 'Models/model.pb'
 
 # Load The Custom Classifier
 with open(CLASSIFIER_PATH, 'rb') as file:
@@ -86,6 +86,7 @@ def add_user():
 
     # Chạy một file Python khác
     print(subprocess.Popen("python src/align_dataset_mtcnn.py  Dataset/FaceData/raw Dataset/FaceData/processed --image_size 160 --margin 32  --random_order --gpu_memory_fraction 0.25", shell=True, stdout=subprocess.PIPE).stdout.read())
+    print(subprocess.Popen("python src/classifier.py TRAIN Dataset/FaceData/processed Models/model.pb Models/facemodel.pkl --batch_size 1000", shell=True, stdout=subprocess.PIPE).stdout.read())
         
     return "Success", 200
 

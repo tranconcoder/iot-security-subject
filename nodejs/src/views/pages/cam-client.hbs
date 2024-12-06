@@ -1,13 +1,19 @@
 <link rel='stylesheet' href='/public/css/cam-client.css' />
 
 <h1>Camera Capture</h1>
-<video id='video' autoplay></video>
-<button id='capture'>Capture</button>
-<canvas id='canvas' width='640' height='480' style='display: none'></canvas>
-<div>
-	<label for='rfid'>RFID:</label>
-	<input type='text' id='rfid' name='rfid' spellcheck='false' />
-	<button id='send'>Send</button>
+<div class='container'>
+	<div class='video-container'>
+		<video id='video' autoplay></video>
+		<canvas id='canvas' width='640' height='480' style='display: none'></canvas>
+	</div>
+	<div class='controls-container'>
+		<button id='capture'>Capture</button>
+		<div>
+			<label for='rfid'>RFID:</label>
+			<input type='text' id='rfid' name='rfid' spellcheck='false' />
+			<button id='send'>Send</button>
+		</div>
+	</div>
 </div>
 
 <script src='/public/scripts/cam-client/main.js'></script>

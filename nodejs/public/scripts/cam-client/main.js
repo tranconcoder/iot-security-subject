@@ -3,7 +3,7 @@ const rfidInput = document.getElementById('rfid');
 
 sendButton.addEventListener('click', () => {
 	const rfid = rfidInput.value;
-	fetch('http://192.168.1.210:3000/api/security-gate/auth-door', {
+	fetch('https://192.168.1.210:3000/api/security-gate/auth-door', {
 		method: 'POST',
 		body: rfid,
 	})
