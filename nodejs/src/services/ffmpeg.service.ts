@@ -38,20 +38,20 @@ export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
 	.inputOptions(['-re'])
 	.withNativeFramerate()
 	.withNoAudio()
-	.withSize(FRAMESIZE) // spell-checker: disable-line
+	.withSize(FRAMESIZE)
 	.nativeFramerate()
 	.noAudio()
 	.outputOptions([
-		'-preset ultrafast', // spell-checker: disable-line
-		'-c:v libx264', // spell-checker: disable-line
-		'-b:v 1M',
+		'-preset ultrafast',
+		'-c:v libx264',
+		'-b:v 2M',
 		'-fps_mode auto',
 		'-pix_fmt yuv420p',
 		'-frame_drop_threshold -5.0',
-		// '-thread_queue_size 1M', // Từng gây lỗi khi chạy trong docker // spell-checker: disable-line
+		'-thread_queue_size 3M', // Từng gây lỗi khi chạy trong docker // spell-checker: disable-line
 	])
 	.format('flv')
-	.output(RTMP_SECURITY_GATE_URL) // spell-checker: disable-line
+	.output(RTMP_SECURITY_GATE_URL)
 	.on('start', handleStart)
 	.on('codecData', handleCodecData)
 	.on('progress', handleProgress)

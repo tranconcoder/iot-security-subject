@@ -1,0 +1,89 @@
+/* public/css/cam-client.css */
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f0f0f0;
+	margin: 0;
+	padding: 20px;
+}
+
+h1 {
+	color: #333;
+	text-align: center;
+}
+
+video {
+	display: block;
+	margin: 0 auto;
+	border: 2px solid #333;
+	border-radius: 8px;
+     width: 100%;
+     aspect-ratio: 640/480;
+}
+
+button {
+	display: block;
+	margin: 10px auto;
+	padding: 10px 20px;
+	font-size: 16px;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: #0056b3;
+}
+
+canvas {
+	display: none;
+}
+
+div {
+	text-align: center;
+	margin-top: 20px;
+}
+
+label {
+	font-size: 16px;
+	margin-right: 10px;
+}
+
+input[type='text'] {
+	padding: 5px;
+	font-size: 16px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	width: calc(100% - 22px); /* Adjust width to fit within the container */
+	max-width: 300px; /* Set a max-width for larger screens */
+	margin: 0 auto; /* Center the input */
+	display: block; /* Make the input block-level */
+}
+
+/* Media Queries for Mobile Phones */
+@media (max-width: 600px) {
+	body {
+		padding: 10px;
+	}
+
+	h1 {
+		font-size: 24px;
+	}
+
+	button {
+		width: calc(100% - 20px); /* Adjust width to fit within the container */
+		max-width: 300px; /* Set a max-width for larger screens */
+		font-size: 14px;
+	}
+
+	label {
+		font-size: 14px;
+	}
+
+	input[type='text'] {
+		font-size: 14px-size: padding: 8px 16
+		font-size: 14px;
+		padding: 4px;
+	}
+}

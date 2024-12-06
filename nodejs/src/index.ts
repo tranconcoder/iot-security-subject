@@ -1,63 +1,85 @@
 // Express app
-import express from "express";
-import handleRoute from "./routes";
-import bodyParser from "body-parser";
+import express from 'express';
+import handleRoute from './routes';
+import bodyParser from 'body-parser';
 
 // Handlebars
-import path from "path";
-import SetupHandlebars from "./services/handlebars.service";
+import path from 'path';
+import SetupHandlebars from './services/handlebars.service';
 
-// Http server
-import { createServer } from "http";
+// Https server
+import { createServer as createHttpsServer } from 'https';
+import fs from 'fs';
 
 // Websocket Server
-import runWebsocketService from "./services/websocket.service";
-import { WebSocketServer } from "ws";
+import runWebsocketService from './services/websocket.service';
+import { WebSocketServer } from 'ws';
 
 // Services
-import * as ffmpegService from "./services/ffmpeg.service";
+import * as ffmpegService from './services/ffmpeg.service';
 
 // Morgan
-import morgan from "morgan";
+import morgan from 'morgan';
 
 // Mongoose
-import connectDb from "./config/database/mongoose.config";
-import { EnvironmentModel } from "./config/database/schema/environment.schema";
+import connectDb from './config/database/mongoose.config';
+import { EnvironmentModel } from './config/database/schema/environment.schema';
 
 // Error handler
-import handleError from "./utils/handleError.util";
+import handleError from './utils/handleError.util';
 
 // Environments
-import { envConfig } from "./config";
-import { randomIntFromInterval } from "./utils/number.util";
+import { envConfig } from './config';
+import { randomIntFromInterval } from './utils/number.util';
 
 // Secure
-import cors from "cors"
+import cors from 'cors';
 
 // Constants
 const { HOST, PORT } = envConfig;
 
+// SSL Certificates
+const privateKey = fs.readFileSync(
+	path.join(__dirname, './assets/certificates/private.key'),
+	'utf8'
+);
+const certificate = fs.readFileSync(
+	path.join(__dirname, './assets/certificates/server.crt'),
+	'utf8'
+);
+const ca = fs.readFileSync(
+	path.join(__dirname, './assets/certificates/ca.crt'),
+	'utf8'
+);
+
+const credentials = {
+	key: privateKey,
+	cert: certificate,
+	ca: ca,
+};
+
 // Server
 const app = express();
-const httpServer = createServer(app);
+const httpsServer = createHttpsServer(credentials, app);
 const wss = new WebSocketServer({
-    server: httpServer,
-    host: HOST,
-    maxPayload: 256 * 1024,
+	server: httpsServer,
+	host: HOST,
+	maxPayload: 256 * 1024,
 });
-
 
 //
 // CORS
 //
-app.use(cors({
-    origin: "*"
-}))
+app.use(
+	cors({
+		origin: '*',
+	})
+);
 
 //
 // MORGAN
 //
-app.use(morgan("tiny"));
+app.use(morgan('tiny'));
 
 //
 // BODY PARSER
@@ -70,7 +92,7 @@ app.use(bodyParser.json());
 //
 // STATIC FILES
 //
-app.use("/public", express.static(path.join(__dirname, "../public")));
+app.use('/public', express.static(path.join(__dirname, '../public')));
 
 //
 // HANDLEBARS
@@ -99,24 +121,24 @@ app.use(handleError);
 //
 // START SERVER
 //
-httpServer.listen(PORT, HOST, () => {
-    console.log(`Server is running on http://${HOST}:${PORT}`);
+httpsServer.listen(PORT, HOST, () => {
+	console.log(`Server is running on https://${HOST}:${PORT}`);
 });
 
 //
 // MONGOOSE
 //
 connectDb()
-    .then(() => {
-        console.log("Connected to database!");
-    })
-    .catch(() => {
-        console.log("Connect fail to database!");
-    });
+	.then(() => {
+		console.log('Connected to database!');
+	})
+	.catch(() => {
+		console.log('Connect fail to database!');
+	});
 
 EnvironmentModel.create({
-    temp: randomIntFromInterval(0, 100),
-    humidity: randomIntFromInterval(0, 100),
+	temp: randomIntFromInterval(0, 100),
+	humidity: randomIntFromInterval(0, 100),
 });
 
-export { wss, httpServer, HOST, PORT };
+export { wss, httpsServer as httpServer, HOST, PORT };
