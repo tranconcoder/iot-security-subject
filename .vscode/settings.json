@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"*.embeddedhtml": "html",
+		"*.js": "javascript",
+		"esp_websocket_client.h": "c",
+		"setup_esp_websocket_client.h": "c"
+	}
+}
