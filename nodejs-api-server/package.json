@@ -1,0 +1,16 @@
+{
+	"$schema": "https://json.schemastore.org/package",
+	"name": "nodejs-api-server",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"start": "ts-node src/index.ts"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"@types/express": "^5.0.0",
+		"@types/node": "^22.10.1",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.2"
+	}
+}
