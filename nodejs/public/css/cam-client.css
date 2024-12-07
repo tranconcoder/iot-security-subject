@@ -69,7 +69,8 @@ label {
 	margin-right: 10px;
 }
 
-input[type='text'] {
+input[type='text'],
+select {
 	padding: 5px;
 	font-size: 16px;
 	border: 1px solid #ccc;
@@ -106,7 +107,8 @@ input[type='text'] {
 		max-width: none;
 	}
 
-	input[type='text'] {
+	input[type='text'],
+	select {
 		width: 100%;
 		max-width: none;
 	}

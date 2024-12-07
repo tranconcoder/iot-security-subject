@@ -10,7 +10,14 @@
 	"dependencies": {
 		"@types/express": "^5.0.0",
 		"@types/node": "^22.10.1",
+		"dotenv": "^16.4.7",
+		"express": "^4.21.2",
+		"mongodb": "^6.11.0",
+		"mongoose": "^8.8.4",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.7.2"
+	},
+	"devDependencies": {
+		"@types/mongoose": "^5.11.97"
 	}
 }

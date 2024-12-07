@@ -2,7 +2,6 @@ import {
 	FACE_RECOGNITION_SERVER_HOST,
 	FACE_RECOGNITION_SERVER_PORT,
 } from '../config/env.config';
-import { RequestError } from '../config/handleError.config';
 import { readStreamEsp32CamSecurityGateImg } from './stream.service';
 
 export default class SecurityGateServices {
@@ -19,13 +18,12 @@ export default class SecurityGateServices {
 			fetch(path, { method: 'POST', body: formData })
 				.then((res) => res.text())
 				.then((data) => console.log(data))
-				.catch(() => {
-					throw new RequestError(400, 'Server error!');
-				});
+				.catch(() => {});
 		}
 
 		// Handle detect on TRANSFER_TIMEOUT(ms)
 		readStreamEsp32CamSecurityGateImg.on('data', handleData);
+
 		setTimeout(() => {
 			readStreamEsp32CamSecurityGateImg.off('data', handleData);
 		}, TRANSFER_TIMEOUT);

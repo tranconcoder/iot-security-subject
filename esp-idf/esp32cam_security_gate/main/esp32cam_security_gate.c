@@ -16,7 +16,7 @@
 #include "driver/gpio.h"
 #include <stdio.h>
 
-#include "setup_rc522.h"
+// #include "setup_rc522.h"
 #include "setup_esp32_cam.h"
 #include "config_http_client.h"
 #include "esp_websocket_client.h"
@@ -229,7 +229,7 @@ void app_main()
     s->set_sharpness(s, 200);
 
     setup_esp_websocket_client_init();
-    setup_rc522();
+    // setup_rc522();
 
     while (true)
     {

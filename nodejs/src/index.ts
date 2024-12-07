@@ -34,33 +34,29 @@ import { randomIntFromInterval } from './utils/number.util';
 
 // Secure
 import cors from 'cors';
+import { createServer } from 'http';
 
 // Constants
 const { HOST, PORT } = envConfig;
 
 // SSL Certificates
 const privateKey = fs.readFileSync(
-	path.join(__dirname, './assets/certificates/private.key'),
+	path.join(__dirname, './assets/certificates/key.pem'),
 	'utf8'
 );
 const certificate = fs.readFileSync(
-	path.join(__dirname, './assets/certificates/server.crt'),
-	'utf8'
-);
-const ca = fs.readFileSync(
-	path.join(__dirname, './assets/certificates/ca.crt'),
+	path.join(__dirname, './assets/certificates/cert.pem'),
 	'utf8'
 );
 
 const credentials = {
 	key: privateKey,
 	cert: certificate,
-	ca: ca,
 };
 
 // Server
 const app = express();
-const httpsServer = createHttpsServer(credentials, app);
+const httpsServer = createServer(app);
 const wss = new WebSocketServer({
 	server: httpsServer,
 	host: HOST,

@@ -1,7 +1,7 @@
-import { MEDIA_SERVER_HOST, MEDIA_SERVER_PORT } from "./env.config";
+import { MEDIA_SERVER_HOST, MEDIA_SERVER_PORT } from './env.config';
 
-export const LIVE_STREAM_SECURITY_GATE_NAME = "security_gate";
-export const LIVE_STREAM_MONITOR_NAME = "monitor";
+export const LIVE_STREAM_SECURITY_GATE_NAME = 'security_gate';
+export const LIVE_STREAM_MONITOR_NAME = 'monitor';
 
 export const LIVE_STREAM_PATH_FLV = `http://${MEDIA_SERVER_HOST}:${MEDIA_SERVER_PORT}/live`;
 export const LIVE_STREAM_SECURITY_GATE_PATH_FLV = `${LIVE_STREAM_PATH_FLV}/${LIVE_STREAM_SECURITY_GATE_NAME}.flv`;

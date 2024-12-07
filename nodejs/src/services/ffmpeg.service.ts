@@ -80,12 +80,11 @@ export const ffmpegCommandMonitor = Ffmpeg({ priority: 1 })
 	.outputOptions([
 		'-preset medium',
 		'-c:v libx264',
-		`-vf ` +
-			//`hflip,` +
-			`drawtext=${convertObjectConfigToString(timeFilterConfig, '=', ':')},` +
-			`drawtext=${convertObjectConfigToString(monitorFilterConfig, '=', ':')}`,
+		// `-vf ` +
+		// 	//`hflip,` +
+		// 	`drawtext=${convertObjectConfigToString(timeFilterConfig, '=', ':')},` +
+		// 	`drawtext=${convertObjectConfigToString(monitorFilterConfig, '=', ':')}`,
 		'-b:v 1M',
-		'-r 20',
 		'-fps_mode auto',
 		'-pix_fmt yuv420p',
 		'-frame_drop_threshold -5.0',

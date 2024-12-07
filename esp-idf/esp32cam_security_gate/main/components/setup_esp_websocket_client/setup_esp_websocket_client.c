@@ -4,11 +4,12 @@
 
 const char *TAG = "websocket_client";
 
+extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
+extern const uint8_t ca_pem_end[] asm("_binary_ca_pem_end");
+
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
 const esp_websocket_client_config_t ws_cfg = {
-    .host = CONFIG_WEBSERVER_IP,
-    .port = CONFIG_WEBSERVER_PORT,
-    .path = "/?source=esp32cam_security_gate_send_img",
+    .uri = "ws://192.168.1.210:3000/?source=esp32cam_security_gate_send_img",
     .buffer_size = 16 * 1024,
     .reconnect_timeout_ms = 500,
     .network_timeout_ms = 5000,

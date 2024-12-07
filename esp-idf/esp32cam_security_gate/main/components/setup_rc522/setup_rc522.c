@@ -61,7 +61,7 @@ void on_tag_scanned(uint64_t serial_number)
 void setup_rc522()
 {
     rc522_config_t rc522_config = {
-        .spi.host = VSPI_HOST,
+        .spi.host = SPI3_HOST,
         .spi.miso_gpio = 12,
         .spi.mosi_gpio = 13,
         .spi.sck_gpio = 14,
