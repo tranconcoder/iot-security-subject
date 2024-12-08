@@ -62,10 +62,10 @@ void setup_rc522()
 {
     rc522_config_t rc522_config = {
         .spi.host = SPI3_HOST,
-        .spi.miso_gpio = 12,
-        .spi.mosi_gpio = 13,
-        .spi.sck_gpio = 14,
-        .spi.sda_gpio = 15,
+        .spi.miso_gpio = 15,
+        .spi.mosi_gpio = 16,
+        .spi.sck_gpio = 17,
+        .spi.sda_gpio = 18,
     };
 
     rc522_create(&rc522_config, &scanner);

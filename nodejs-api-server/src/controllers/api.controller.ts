@@ -29,7 +29,7 @@ export class ApiController {
 			}
 
 			// Generate keyP and keyG (public keys for AES)
-			const keyP = BigInt(Math.floor(Math.random() * 1000000));
+			const keyP = BigInt(Math.floor(Math.random() * 10000000000));
 			const keyG = Math.floor(Math.random() * 1000000);
 
 			// Upsert the room record

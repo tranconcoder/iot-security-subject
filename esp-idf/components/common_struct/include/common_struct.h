@@ -4,3 +4,5 @@
 
 // CAMERA SETTINGS
 #define FPS_SEND_LIMIT 24
+
+void generate_p_and_g_keys(long int *p, int *g);

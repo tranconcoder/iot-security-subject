@@ -1,4 +1,5 @@
 dependencies:
+  abobija/rc522: "*"
   espressif/tinyusb: "^0.17.0~1"
   espressif/esp_tinyusb: "^1.5.0"
   espressif/esp_modem_usb_dte: "^1.2.1"

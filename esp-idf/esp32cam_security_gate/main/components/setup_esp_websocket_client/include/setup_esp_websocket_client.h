@@ -5,6 +5,8 @@
 #include "common_struct.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
+#include "config_http_client.h"
+#include "esp_http_client.h"
 
 static bool websocket_connecting;
 void setup_esp_websocket_client_init();

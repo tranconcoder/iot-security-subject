@@ -5,6 +5,7 @@ import { catchError } from '../middlewares/handleError.middware';
 const securityGateRouter = Router();
 const securityGateController = new SecurityGateController();
 
+securityGateRouter.post('/init', catchError(securityGateController.init));
 securityGateRouter.post(
 	'/auth-door',
 	catchError(securityGateController.authDoor)

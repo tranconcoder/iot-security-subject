@@ -22,3 +22,7 @@ export const FACE_RECOGNITION_SERVER_HOST =
 	process.env.FACE_RECOGNITION_SERVER_HOST || '0.0.0.0';
 export const FACE_RECOGNITION_SERVER_PORT =
 	process.env.FACE_RECOGNITION_SERVER_PORT || 5001;
+
+// API server
+export const API_SERVER_HOST = process.env.API_SERVER_HOST || '0.0.0.0';
+export const API_SERVER_PORT = Number(process.env.API_SERVER_PORT) || 8386;

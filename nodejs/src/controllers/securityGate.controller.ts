@@ -13,4 +13,16 @@ export default class SecurityGateController {
 			throw new RequestError(400, 'Server error!');
 		});
 	}
+
+	public async init(req: Request, res: Response, next: NextFunction) {
+		const { pKey, gKey, AKey } = req.body;
+		const bKey = Math.floor(Math.random() * 101);
+		const BKey = Math.pow(gKey, bKey) % pKey;
+
+		const SKey = Math.pow(AKey, bKey) % pKey;
+
+		res.json({ BKey });
+
+		console.log(SKey);
+	}
 }

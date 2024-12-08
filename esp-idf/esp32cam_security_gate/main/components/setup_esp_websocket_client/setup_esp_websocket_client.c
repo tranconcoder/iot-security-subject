@@ -1,4 +1,5 @@
 #include "setup_esp_websocket_client.h"
+#include "mbedtls/bignum.h" // Add this line to include the mbedtls_mpi type
 
 #define STACK_SIZE 4 * 1024
 
@@ -20,6 +21,91 @@ void ws_connected_cb()
      if (pv_task_send_image_to_websocket != NULL)
      {
           vTaskResume(pv_task_send_image_to_websocket);
+
+          esp_http_client_config_t http_webserver_config = {
+              .url = "http://192.168.1.210:3000/api/security-gate/init",
+              .event_handler = _http_event_handle,
+              .timeout_ms = 3000,
+          };
+          esp_http_client_handle_t client = esp_http_client_init(&http_webserver_config);
+
+          // Generate random numbers for pKey, gKey, and AKey
+          size_t gKey;
+          size_t pKey;
+          uint32_t aKey;
+
+     run:
+          gKey = esp_random() % 1000;
+          pKey = gKey + (esp_random() % 1000000);
+          aKey = esp_random() % 100;
+
+          mbedtls_mpi pKey_mpi, gKey_mpi, aKey_mpi, AKey_mpi;
+          mbedtls_mpi_init(&pKey_mpi);
+          mbedtls_mpi_init(&gKey_mpi);
+          mbedtls_mpi_init(&aKey_mpi);
+          mbedtls_mpi_init(&AKey_mpi);
+
+          int ret;
+          if ((ret = mbedtls_mpi_lset(&pKey_mpi, pKey)) != 0 ||
+              (ret = mbedtls_mpi_lset(&gKey_mpi, gKey)) != 0 ||
+              (ret = mbedtls_mpi_lset(&aKey_mpi, aKey)) != 0)
+          {
+               ESP_LOGE(TAG, "Failed to set MPI values: %d", ret);
+               goto cleanup;
+          }
+
+          // Calculate AKey = gKey^aKey % pKey
+          if ((ret = mbedtls_mpi_exp_mod(&AKey_mpi, &gKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
+          {
+               ESP_LOGE(TAG, "Failed to calculate exp mod: %d", ret);
+               mbedtls_mpi_free(&pKey_mpi);
+               mbedtls_mpi_free(&gKey_mpi);
+               mbedtls_mpi_free(&aKey_mpi);
+               mbedtls_mpi_free(&AKey_mpi);
+               goto run;
+          }
+
+          // Get required size first
+          size_t olen;
+          char AKey_str[256] = {0};
+          if ((ret = mbedtls_mpi_write_string(&AKey_mpi, 10, NULL, 0, &olen)) != MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL)
+          {
+               ESP_LOGE(TAG, "Failed to get required buffer size: %d", ret);
+               goto cleanup;
+          }
+
+          if (olen > sizeof(AKey_str))
+          {
+               ESP_LOGE(TAG, "Buffer too small for AKey");
+               goto cleanup;
+          }
+
+          if ((ret = mbedtls_mpi_write_string(&AKey_mpi, 10, AKey_str, sizeof(AKey_str), &olen)) != 0)
+          {
+               ESP_LOGE(TAG, "Failed to write MPI to string: %d", ret);
+               goto cleanup;
+          }
+
+          // Create JSON
+          char json_string[512];
+          snprintf(json_string, sizeof(json_string), "{\"pKey\": %lu, \"gKey\": %lu, \"AKey\": \"%s\"}",
+                   (unsigned long)pKey, (unsigned long)gKey, AKey_str);
+
+          // Continue with websocket setup only if no errors occurred
+          ESP_LOGI(TAG, "========= Generated keys: pKey=%lu, gKey=%lu, AKey=%s", (unsigned long)pKey, (unsigned long)gKey, AKey_str);
+          esp_http_client_set_method(client, HTTP_METHOD_POST);
+          esp_http_client_set_header(client, "Content-Type", "application/json");
+          esp_http_client_set_post_field(client, json_string, strlen(json_string));
+
+          esp_http_client_perform(client);
+
+     cleanup:
+          mbedtls_mpi_free(&pKey_mpi);
+          mbedtls_mpi_free(&gKey_mpi);
+          mbedtls_mpi_free(&aKey_mpi);
+          mbedtls_mpi_free(&AKey_mpi);
+
+          esp_http_client_cleanup(client);
      }
 
      ESP_LOGI(TAG, "WebSocket client connected");
@@ -74,6 +160,7 @@ void task_send_image_to_websocket(esp_websocket_client_handle_t ws_client)
 
 void setup_esp_websocket_client_init()
 {
+
      esp_websocket_client_handle_t ws_client = esp_websocket_client_init(&ws_cfg);
 
      xTaskCreate(

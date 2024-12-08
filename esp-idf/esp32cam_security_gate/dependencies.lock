@@ -1,4 +1,15 @@
 dependencies:
+  abobija/rc522:
+    component_hash: affaa665618bda081401b2313c2e96662a58805ef0ed49dabd90796837e63853
+    dependencies:
+    - name: idf
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^5
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 3.2.4
   common_struct:
     dependencies: []
     source:
@@ -191,6 +202,7 @@ dependencies:
       type: local
     version: '*'
 direct_dependencies:
+- abobija/rc522
 - common_struct
 - config_http_client
 - esp-idf-rc522
@@ -204,6 +216,6 @@ direct_dependencies:
 - setup_esp32_cam
 - setup_esp_websocket_client
 - setup_rc522
-manifest_hash: 9116c6b78bc8b6339149da845dce15b3da2a1f8ffa9a99babfce1fb23eb9d8dd
+manifest_hash: 6dfe6e9b73d6a956cdcd46ff8b6ed7f0f73b32d4f8b856d107073a26df1d4d10
 target: esp32s3
 version: 2.0.0

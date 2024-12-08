@@ -42,6 +42,7 @@ export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
 	.nativeFramerate()
 	.noAudio()
 	.outputOptions([
+		'-vf vflip',
 		'-preset ultrafast',
 		'-c:v libx264',
 		'-b:v 2M',
