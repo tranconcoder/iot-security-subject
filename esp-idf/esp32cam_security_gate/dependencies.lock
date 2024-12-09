@@ -10,6 +10,12 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 3.2.4
+  aes-custom:
+    dependencies: []
+    source:
+      path: D:\Workspace\iot-security-subject\esp-idf\components\aes-custom
+      type: local
+    version: '*'
   common_struct:
     dependencies: []
     source:
@@ -203,6 +209,7 @@ dependencies:
     version: '*'
 direct_dependencies:
 - abobija/rc522
+- aes-custom
 - common_struct
 - config_http_client
 - esp-idf-rc522
@@ -216,6 +223,6 @@ direct_dependencies:
 - setup_esp32_cam
 - setup_esp_websocket_client
 - setup_rc522
-manifest_hash: 6dfe6e9b73d6a956cdcd46ff8b6ed7f0f73b32d4f8b856d107073a26df1d4d10
+manifest_hash: 5a7ab064ebbc31b85700973efab73426fe50e76910684d689f54ae590ed6519c
 target: esp32s3
 version: 2.0.0

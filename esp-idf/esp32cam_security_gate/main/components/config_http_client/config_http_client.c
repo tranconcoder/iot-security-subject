@@ -17,7 +17,12 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
           break;
      case HTTP_EVENT_ON_HEADER:
           ESP_LOGI(HTTP_CLIENT_TAG, "HTTP_EVENT_ON_HEADER");
-          printf("%.*s", evt->data_len, (char *)evt->data);
+          printf("%s: %s", evt->header_key, (char *)evt->header_value);
+
+          if (!strcmp(evt->header_key, "X-API-KEY"))
+          {
+               esp_http_client_set_header(evt->client, evt->header_key, evt->header_value);
+          }
           break;
      case HTTP_EVENT_ON_DATA:
           ESP_LOGI(HTTP_CLIENT_TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
@@ -39,7 +44,6 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
      }
      return ESP_OK;
 }
-
 
 static esp_http_client_config_t http_webserver_config = {
     .host = CONFIG_SERVER_IP,

@@ -1,8 +1,8 @@
 dependencies:
-  abobija/rc522: "*"
-  espressif/tinyusb: "^0.17.0~1"
-  espressif/esp_tinyusb: "^1.5.0"
-  espressif/esp_modem_usb_dte: "^1.2.1"
+  abobija/rc522: '*'
+  espressif/tinyusb: '^0.17.0~1'
+  espressif/esp_tinyusb: '^1.5.0'
+  espressif/esp_modem_usb_dte: '^1.2.1'
   setup_rc522:
     path: './components/setup_rc522'
   setup_esp32_cam:
@@ -15,6 +15,8 @@ dependencies:
     path: ../../components/esp-idf-rc522
   common_struct:
     path: ../../components/common_struct
+  aes-custom:
+    path: '../../components/aes-custom'
   esp-websocket_client:
     path: ../../components/esp-websocket_client
   espressif/esp32-camera: '*'

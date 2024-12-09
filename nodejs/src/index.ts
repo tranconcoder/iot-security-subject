@@ -1,5 +1,6 @@
 // Express app
 import express from 'express';
+import session, { SessionOptions } from 'express-session';
 import handleRoute from './routes';
 import bodyParser from 'body-parser';
 
@@ -62,6 +63,18 @@ const wss = new WebSocketServer({
 	host: HOST,
 	maxPayload: 256 * 1024,
 });
+
+//
+// SESSION
+//
+const sessionOptions: SessionOptions = {
+	resave: true,
+	saveUninitialized: true,
+	secret: 'somesecret',
+	cookie: { maxAge: 600000, httpOnly: false },
+};
+
+app.use(session(sessionOptions));
 
 //
 // CORS
