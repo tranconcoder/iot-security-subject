@@ -13,13 +13,15 @@ const char *TAG = "websocket_client";
 
 extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
 extern const uint8_t ca_pem_end[] asm("_binary_ca_pem_end");
+char headers[256];
 
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
-const esp_websocket_client_config_t ws_cfg = {
+esp_websocket_client_config_t ws_cfg = {
     .uri = "ws://192.168.1.210:3000/?source=esp32cam_security_gate_send_img",
     .buffer_size = 16 * 1024,
     .reconnect_timeout_ms = 500,
     .network_timeout_ms = 5000,
+    .headers = headers,
 };
 
 esp_err_t http_event_handle(esp_http_client_event_t *evt);
@@ -31,6 +33,7 @@ esp_http_client_config_t http_webserver_config = {
 };
 
 esp_http_client_handle_t *client = NULL;
+esp_websocket_client_handle_t *ws_client = NULL;
 char SKey_str[256];
 char *apiKey;
 char *resData = NULL;
@@ -66,6 +69,7 @@ void load_api_key()
           {
                apiKey = malloc(required_size);
                nvs_get_str(nvs_handle, "apiKey", apiKey, &required_size);
+               sprintf(headers, "X-API-KEY: %s\r\n", apiKey);
           }
           nvs_close(nvs_handle);
      }
@@ -246,6 +250,8 @@ run:
           }
 
           ESP_LOGI(TAG, "Calculated shared secret (SKey): %s", SKey_str);
+
+          vTaskResume(pv_task_send_image_to_websocket);
      }
 
 cleanup:
@@ -265,7 +271,6 @@ void ws_connected_cb()
 
      if (pv_task_send_image_to_websocket != NULL)
      {
-          vTaskResume(pv_task_send_image_to_websocket);
           handleGetNewApiKey();
      }
 
@@ -283,7 +288,7 @@ void ws_error_cb()
      ESP_LOGE(TAG, "WebSocket client error");
 }
 
-void task_send_image_to_websocket(esp_websocket_client_handle_t ws_client)
+void task_send_image_to_websocket()
 {
      uint64_t last_send_time = esp_timer_get_time();
 
@@ -337,7 +342,7 @@ void task_send_image_to_websocket(esp_websocket_client_handle_t ws_client)
      }
 }
 
-void setup_esp_websocket_client_init()
+void setup_esp_websocket_client_init(int *g_sockfd)
 {
      resData = heap_caps_malloc(1000, MALLOC_CAP_SPIRAM);
      if (resData == NULL)
@@ -348,7 +353,8 @@ void setup_esp_websocket_client_init()
 
      load_api_key(); // Load apiKey from NVS
 
-     esp_websocket_client_handle_t ws_client = esp_websocket_client_init(&ws_cfg);
+     ws_cfg.headers = headers;
+     ws_client = esp_websocket_client_init(&ws_cfg);
 
      xTaskCreate(
          task_send_image_to_websocket,

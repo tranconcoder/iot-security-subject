@@ -29,10 +29,8 @@ export default function runWebsocketService(
 		const apiKey = query.apiKey || null;
 		if (Array.isArray(source)) source = source[0];
 
-		if (!apiKey) {
-			console.log('API Key is required!');
-			ws.close();
-		}
+		console.log(req.headers);
+		console.log({ apiKey });
 
 		// Set connection state
 		ws.id = uuidv4();

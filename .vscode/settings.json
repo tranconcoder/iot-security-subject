@@ -6,6 +6,8 @@
 		"setup_esp_websocket_client.h": "c",
 		"setup_esp32_cam.h": "c",
 		"setup_rc522.h": "c",
-		"config_http_client.h": "c"
+		"config_http_client.h": "c",
+		"esp_event.h": "c",
+		"esp32cam_security_gate.h": "c"
 	}
 }
