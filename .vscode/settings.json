@@ -8,6 +8,7 @@
 		"setup_rc522.h": "c",
 		"config_http_client.h": "c",
 		"esp_event.h": "c",
-		"esp32cam_security_gate.h": "c"
+		"esp32cam_security_gate.h": "c",
+		"esp_netif.h": "c"
 	}
 }

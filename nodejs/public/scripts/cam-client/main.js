@@ -9,7 +9,7 @@ const context = canvas.getContext('2d');
 let websocket;
 
 function connectWebSocket(source) {
-	const ADDRESS = `wss://192.168.23.35:3000?source=${source}`;
+	const ADDRESS = `wss://192.168.1.210:3000?source=${source}`;
 	websocket = new WebSocket(ADDRESS);
 
 	websocket.onopen = async () => {
@@ -50,7 +50,7 @@ sourceSelect.addEventListener('change', () => {
 
 sendButton.addEventListener('click', () => {
 	const rfid = rfidInput.value;
-	fetch('https://192.168.23.35:3000/api/security-gate/auth-door', {
+	fetch('https://192.168.1.210:3000/api/security-gate/auth-door', {
 		method: 'POST',
 		body: rfid,
 	})

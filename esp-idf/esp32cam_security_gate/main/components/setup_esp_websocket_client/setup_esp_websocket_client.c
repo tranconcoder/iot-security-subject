@@ -11,13 +11,11 @@
 
 const char *TAG = "websocket_client";
 
-extern const uint8_t ca_pem_start[] asm("_binary_ca_pem_start");
-extern const uint8_t ca_pem_end[] asm("_binary_ca_pem_end");
-char headers[256];
+char headers[32 + 1];
 
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
 esp_websocket_client_config_t ws_cfg = {
-    .uri = "ws://192.168.23.35:3000/?source=esp32cam_security_gate_send_img",
+    .uri = "ws://192.168.1.210:3000/?source=esp32cam_security_gate_send_img",
     .buffer_size = 16 * 1024,
     .reconnect_timeout_ms = 500,
     .network_timeout_ms = 5000,
@@ -26,7 +24,7 @@ esp_websocket_client_config_t ws_cfg = {
 
 esp_err_t http_event_handle(esp_http_client_event_t *evt);
 esp_http_client_config_t http_webserver_config = {
-    .url = "http://192.168.23.35:3000/api/security-gate/init",
+    .url = "http://192.168.1.210:3000/api/security-gate/init",
     .event_handler = http_event_handle,
     .timeout_ms = 3000,
     .keep_alive_enable = true,
@@ -243,10 +241,14 @@ run:
           }
 
           // Convert SKey to string
-          if ((ret = mbedtls_mpi_write_string(&SKey_mpi, 10, SKey_str, sizeof(SKey_str), &olen)) != 0)
+          uint8_t hash[32];
+          if ((ret = mbedtls_mpi_write_binary(&SKey_mpi, hash, sizeof(hash))) != 0)
           {
-               ESP_LOGE(TAG, "Failed to write SKey to string: %d", ret);
-               goto cleanup;
+               ESP_LOGE(TAG, "Failed to write SKey to binary: %d", ret);
+          }
+          for (int i = 0; i < sizeof(hash); i++)
+          {
+               sprintf(SKey_str + (i * 2), "%02x", hash[i]);
           }
 
           ESP_LOGI(TAG, "Calculated shared secret (SKey): %s", SKey_str);
@@ -317,7 +319,7 @@ void task_send_image_to_websocket()
 
           encrypt_any_length_string(enc_input, (uint8_t *)fb->buf, (uint8_t *)enc_iv);
 
-          int send_result = esp_websocket_client_send_bin(ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
+          int send_result = esp_websocket_client_send_bin(ws_client, (char *)enc_input, sizeof(enc_input), 5000 / portTICK_PERIOD_MS);
 
           // Free allocated memory
           free(enc_input);

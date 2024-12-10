@@ -16,23 +16,6 @@
 #include "driver/gpio.h"
 #include <stdio.h>
 
-#include "setup_rc522.h"
-#include "setup_esp32_cam.h"
-#include "config_http_client.h"
-#include "esp_websocket_client.h"
-#include "setup_esp_websocket_client.h"
-
 #include "esp_tls.h"
 #include "esp_event.h"
 #include "esp_netif.h"
-
-#define STACK_SIZE 4 * 1024
-
-#define WIFI_CONNECTED_BIT BIT0
-#define WIFI_FAIL_BIT BIT1
-
-#define EXAMPLE_ESP_WIFI_SSID CONFIG_ROUTER_SSID
-#define EXAMPLE_ESP_WIFI_PASS CONFIG_ROUTER_PASSWORD
-#define EXAMPLE_ESP_MAXIMUM_RETRY 10
-
-static int g_sockfd;
