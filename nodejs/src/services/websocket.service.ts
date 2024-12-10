@@ -13,6 +13,8 @@ import {
 	readStreamEsp32CamMonitorImg,
 	readStreamEsp32CamSecurityGateImg,
 } from './stream.service';
+import AESModel from '../config/database/schema/AES.schema';
+import crypto from 'crypto';
 
 const websocketAnalytics = new WebsocketAnalytics(0, 0, 10_000);
 websocketAnalytics.startAnalytics();
@@ -22,44 +24,72 @@ export default function runWebsocketService(
 	HOST: string,
 	PORT: number
 ) {
-	wss.on('connection', function connection(ws: WebSocketCustom, req: Request) {
-		// Validate connection
-		const { query } = url.parse(req.url, true);
-		let source = query.source || WebSocketSourceEnum.INVALID_SOURCE;
-		const apiKey = query.apiKey || null;
-		if (Array.isArray(source)) source = source[0];
+	wss.on(
+		'connection',
+		async function connection(ws: WebSocketCustom, req: Request) {
+			// Validate connection
+			const { query } = url.parse(req.url, true);
+			let source = query.source || WebSocketSourceEnum.INVALID_SOURCE;
+			const apiKey = req.headers['x-api-key'] || null;
+			if (Array.isArray(source)) source = source[0];
 
-		console.log(req.headers);
-		console.log({ apiKey });
+			let aesKey: string | undefined;
+			if (apiKey) {
+				aesKey = (await AESModel.findOne({ APIKEY: apiKey }).lean())?.SKey;
 
-		// Set connection state
-		ws.id = uuidv4();
-		ws.source = source as string;
-		ws.on('error', console.error);
+				// aesKey = crypto
+				// 	.createHash('sha256')
+				// 	.update(aesKey as string)
+				// 	.digest('base64')
+				// 	.substr(0, 32);
+				console.log(aesKey);
+			}
 
-		console.log(`Client ${ws.id} connected`);
+			// Set connection state
+			ws.id = uuidv4();
+			ws.source = source as string;
+			ws.on('error', console.error);
 
-		switch (ws.source) {
-			case WebSocketSourceEnum.ESP32CAM_SECURITY_GATE_SEND_IMG:
-				// Handle append video frames to stream
-				ws.on('message', async function message(buffer: Buffer) {
-					websocketAnalytics.transferData(buffer.byteLength, 1);
-					readStreamEsp32CamSecurityGateImg.push(buffer);
-				});
-				break;
+			console.log(`Client ${ws.id} connected`);
 
-			case WebSocketSourceEnum.ESP32CAM_MONITOR_SEND_IMG:
-				ws.on('message', async function message(buffer: Buffer) {
-					readStreamEsp32CamMonitorImg.push(buffer);
-				});
-				break;
+			switch (ws.source) {
+				case WebSocketSourceEnum.ESP32CAM_SECURITY_GATE_SEND_IMG:
+					// Handle append video frames to stream
+					ws.on('message', async function message(buffer: Buffer) {
+						if (aesKey) {
+							websocketAnalytics.transferData(buffer.byteLength, 1);
 
-			case WebSocketSourceEnum.INVALID_SOURCE:
-			default:
-				console.log('Source is not valid!');
-				ws.close();
+							function decryptData(buffer: Buffer, aesKey: string): Buffer {
+								const decipher = crypto.createDecipheriv(
+									'aes-256-cbc',
+									aesKey,
+									buffer.subarray(0, 16)
+								);
+								let decrypted = Buffer.concat([
+									decipher.update(buffer.subarray(16)),
+									decipher.final(),
+								]);
+								return decrypted;
+							}
+
+							readStreamEsp32CamSecurityGateImg.push(buffer);
+						}
+					});
+					break;
+
+				case WebSocketSourceEnum.ESP32CAM_MONITOR_SEND_IMG:
+					ws.on('message', async function message(buffer: Buffer) {
+						readStreamEsp32CamMonitorImg.push(buffer);
+					});
+					break;
+
+				case WebSocketSourceEnum.INVALID_SOURCE:
+				default:
+					console.log('Source is not valid!');
+					ws.close();
+			}
 		}
-	});
+	);
 
 	wss.on('listening', () => {
 		console.log(`WebSocket Server is listening on ws://${HOST}:${PORT}`);

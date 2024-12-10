@@ -17,7 +17,7 @@ char headers[256];
 
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
 esp_websocket_client_config_t ws_cfg = {
-    .uri = "ws://192.168.1.210:3000/?source=esp32cam_security_gate_send_img",
+    .uri = "ws://192.168.23.35:3000/?source=esp32cam_security_gate_send_img",
     .buffer_size = 16 * 1024,
     .reconnect_timeout_ms = 500,
     .network_timeout_ms = 5000,
@@ -26,7 +26,7 @@ esp_websocket_client_config_t ws_cfg = {
 
 esp_err_t http_event_handle(esp_http_client_event_t *evt);
 esp_http_client_config_t http_webserver_config = {
-    .url = "http://192.168.1.210:3000/api/security-gate/init",
+    .url = "http://192.168.23.35:3000/api/security-gate/init",
     .event_handler = http_event_handle,
     .timeout_ms = 3000,
     .keep_alive_enable = true,
@@ -315,7 +315,7 @@ void task_send_image_to_websocket()
           char enc_iv[16] = "1234567890123456";
           memcpy(enc_input, (char *)fb->buf, fb->len);
 
-          encrypt_any_length_string(enc_input, (uint8_t *)SKey_str, (uint8_t *)enc_iv);
+          encrypt_any_length_string(enc_input, (uint8_t *)fb->buf, (uint8_t *)enc_iv);
 
           int send_result = esp_websocket_client_send_bin(ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
 
