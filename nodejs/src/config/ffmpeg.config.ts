@@ -1,17 +1,10 @@
-import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import { envConfig } from '.';
 import { ConfigFilterVideo } from '../types/ffmpeg';
 
 // Bin file path
-export const FFMPEG_PATH = path.join(
-	__dirname,
-	'./assets/bin/fffmpeg/ffmpeg.exe'
-);
-export const FFPROBE_PATH = path.join(
-	__dirname,
-	'./assets/bin/fffmpeg/ffprobe.exe'
-);
+export const FFMPEG_PATH = path.join(__dirname, envConfig.FFMPEG_PATH);
+export const FFPROBE_PATH = path.join(__dirname, envConfig.FFPROBE_PATH);
 
 export const FRAMESIZES = {
 	QCIF: '176x144',

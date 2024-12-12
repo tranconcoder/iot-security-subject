@@ -2,7 +2,19 @@
 	"files.associations": {
 		"*.embeddedhtml": "html",
 		"*.js": "javascript",
-		"setup_spi.h": "c"
+		"setup_spi.h": "c",
+		"setup_diffie_hellman.h": "c",
+		"atomic": "cpp",
+		"*.tcc": "cpp",
+		"bitset": "cpp",
+		"chrono": "cpp",
+		"random": "cpp",
+		"format": "cpp",
+		"functional": "cpp",
+		"regex": "cpp",
+		"tuple": "cpp",
+		"type_traits": "cpp",
+		"variant": "cpp"
 	},
 	"cmake.sourceDirectory": "D:/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/managed_components/espressif__mesh_lite"
 }

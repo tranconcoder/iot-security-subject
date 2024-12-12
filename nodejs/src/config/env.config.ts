@@ -26,3 +26,7 @@ export const FACE_RECOGNITION_SERVER_PORT =
 // API server
 export const API_SERVER_HOST = process.env.API_SERVER_HOST || '0.0.0.0';
 export const API_SERVER_PORT = Number(process.env.API_SERVER_PORT) || 8386;
+
+// Ffmpeg
+export const FFMPEG_PATH = process.env.FFMPEG_PATH || 'ffmpeg';
+export const FFPROBE_PATH = process.env.FFPROBE_PATH || 'ffprobe';

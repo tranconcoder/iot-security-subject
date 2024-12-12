@@ -22,60 +22,11 @@ esp_websocket_client_config_t ws_cfg = {
     .headers = headers,
 };
 
-esp_err_t http_event_handle(esp_http_client_event_t *evt);
-esp_http_client_config_t http_webserver_config = {
-    .url = "http://192.168.1.210:3000/api/security-gate/init",
-    .event_handler = http_event_handle,
-    .timeout_ms = 3000,
-    .keep_alive_enable = true,
-};
-
-esp_http_client_handle_t *client = NULL;
 esp_websocket_client_handle_t *ws_client = NULL;
 char SKey_str[256];
 char *apiKey;
 char *resData = NULL;
 size_t resDataLen = 0;
-
-// Function to store apiKey in NVS
-void store_api_key(const char *key)
-{
-     nvs_handle_t nvs_handle;
-     esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-     if (err == ESP_OK)
-     {
-          nvs_set_str(nvs_handle, "apiKey", key);
-          nvs_commit(nvs_handle);
-          nvs_close(nvs_handle);
-     }
-     else
-     {
-          ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(err));
-     }
-}
-
-// Function to load apiKey from NVS
-void load_api_key()
-{
-     nvs_handle_t nvs_handle;
-     esp_err_t err = nvs_open("storage", NVS_READONLY, &nvs_handle);
-     if (err == ESP_OK)
-     {
-          size_t required_size;
-          err = nvs_get_str(nvs_handle, "apiKey", NULL, &required_size);
-          if (err == ESP_OK)
-          {
-               apiKey = malloc(required_size);
-               nvs_get_str(nvs_handle, "apiKey", apiKey, &required_size);
-               sprintf(headers, "X-API-KEY: %s\r\n", apiKey);
-          }
-          nvs_close(nvs_handle);
-     }
-     else
-     {
-          ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(err));
-     }
-}
 
 esp_err_t http_event_handle(esp_http_client_event_t *evt)
 {
