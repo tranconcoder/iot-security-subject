@@ -43,7 +43,7 @@ char *to_json(key_struct *keys)
      return json_str;
 }
 
-static char *apiKey;
+char *apiKey;
 
 // Generate default key in client side
 void generateKey()
@@ -167,12 +167,9 @@ void handle_http_event_new_key(esp_http_client_event_t *evt)
           if (output_buffer != NULL)
           {
                // Remove double slash from the response
-               char *keyTrimmed = malloc(output_len - 1);
-               strncpy(keyTrimmed, output_buffer + 1, output_len - 2);
-               keyTrimmed[output_len - 2] = '\0';
+               keys->BKey = atoi(output_buffer);
 
-               // Convert response to BKey (number)
-               keys->BKey = atoi(keyTrimmed);
+               ESP_LOGI(TAG_DIFFIE_HELLMAN, "BKey: %llu", keys->BKey);
 
                free(output_buffer);
                output_buffer = NULL;
@@ -192,13 +189,19 @@ esp_err_t load_key_from_nvs()
      if (ret == ESP_OK)
      {
           size_t required_size_api_key;
-          nvs_get_str(my_nvs_handle, "apiKey", NULL, &required_size_api_key);
+          ret = nvs_get_str(my_nvs_handle, "apiKey", NULL, &required_size_api_key);
+          if (ret != ESP_OK)
+               goto load_key_fail;
 
           apiKey = malloc(required_size_api_key);
 
-          nvs_get_str(my_nvs_handle, "apiKey", apiKey, &required_size_api_key);
-          nvs_get_u64(my_nvs_handle, "secretKey", &keys->SKey);
+          ret = nvs_get_str(my_nvs_handle, "apiKey", apiKey, &required_size_api_key);
+          if (ret != ESP_OK)
+               goto load_key_fail;
 
+          ret = nvs_get_u64(my_nvs_handle, "secretKey", &keys->SKey);
+
+     load_key_fail:
           nvs_close(my_nvs_handle);
      }
 
@@ -210,12 +213,11 @@ bool is_api_valid()
      esp_err_t ret;
      bool result = false;
 
-     // Config HTTP client URI
-     char *url = heap_caps_malloc(100, MALLOC_CAP_SPIRAM);
-     sprintf(url, "http://%s:%d/api/aes/check-api-key", CONFIG_SERVER_IP, CONFIG_SERVER_PORT);
-
      esp_http_client_config_t config = {
-         .url = url,
+         .host = CONFIG_WEBSERVER_IP,
+         .port = CONFIG_WEBSERVER_PORT,
+         .path = "/api/aes/check-api-key",
+         .method = HTTP_METHOD_PUT,
          .event_handler = print_http_event,
          .timeout_ms = 3000,
          .keep_alive_enable = true,
@@ -227,10 +229,10 @@ bool is_api_valid()
      do
      {
           client = esp_http_client_init(&config);
-          esp_http_client_set_method(client, HTTP_METHOD_PUT);
-          esp_http_client_set_header(client, HEADER_API_KEY, apiKey);
-
+          esp_http_client_set_header(client, HEADER_API_KEY, "myapikey");
+          esp_http_client_set_header(client, "User-Agent", "ESP32-CAM-SECURITY-GATE");
           ret = esp_http_client_perform(client);
+
           if (ret == ESP_OK)
           {
                uint16_t code = esp_http_client_get_status_code(client);
@@ -247,11 +249,10 @@ bool is_api_valid()
                ESP_LOGI(TAG_DIFFIE_HELLMAN, "Retrying...");
                vTaskDelay(pdMS_TO_TICKS(300));
           }
-     } while ((maxRetry--) > 0 && ret != ESP_OK);
 
-     // Cleanup
-     free(url);
-     esp_http_client_cleanup(client);
+          // Cleanup
+          esp_http_client_cleanup(client);
+     } while ((maxRetry--) > 0 && ret != ESP_OK);
 
      return result;
 }
@@ -263,8 +264,8 @@ void get_new_key_from_server()
      sprintf(url, "http://%s:%d/api/aes/init", CONFIG_SERVER_IP, CONFIG_SERVER_PORT);
 
      esp_http_client_config_t config = {
-         .host = CONFIG_SERVER_IP,
-         .port = CONFIG_SERVER_PORT,
+         .host = CONFIG_WEBSERVER_IP,
+         .port = CONFIG_WEBSERVER_PORT,
          .path = "/api/aes/init",
          .event_handler = handle_http_event_new_key,
          .keep_alive_enable = true,
@@ -274,21 +275,25 @@ void get_new_key_from_server()
      // Generate new client key
      generateKey(); // Save key on "keys" variable
 
-     uint8_t maxRetry = 3;
+     uint8_t maxRetry = 0;
      esp_err_t ret;
      do
      {
           esp_http_client_handle_t client = esp_http_client_init(&config);
           uint64_t aKey = keys->aKey;
-          char *payload = to_json(keys);
-          size_t payload_len = strlen(payload);
-
-          ESP_LOGI(TAG_DIFFIE_HELLMAN, "Sending new key to server...");
-          ESP_LOGI(TAG_DIFFIE_HELLMAN, "API Key: %s %d", payload, payload_len);
 
           // Remove SKey and aKey before Sending
           keys->aKey = 0;
           keys->SKey = 0;
+
+          char *payload = to_json(keys);
+          size_t payload_len = strlen(payload);
+
+          // Restore aKey
+          keys->aKey = aKey;
+
+          ESP_LOGI(TAG_DIFFIE_HELLMAN, "Sending new key to server...");
+          ESP_LOGI(TAG_DIFFIE_HELLMAN, "API Key: %s %d", payload, payload_len);
 
           esp_http_client_set_header(client, "Content-Type", "application/json");
           esp_http_client_set_post_field(client, payload, payload_len);
@@ -338,6 +343,8 @@ void get_new_key_from_server()
                nvs_commit(my_nvs_handle);
                nvs_close(my_nvs_handle);
 
+               ESP_LOGI(TAG_DIFFIE_HELLMAN, "New SKey : %llu", keys->SKey);
+
           cleanup_get_new_key:
                mbedtls_mpi_free(&BKey_mpi);
                mbedtls_mpi_free(&SKey_mpi);
@@ -352,7 +359,11 @@ void get_new_key_from_server()
                ESP_LOGI(TAG_DIFFIE_HELLMAN, "Retrying...");
                vTaskDelay(pdMS_TO_TICKS(300));
           }
+
+          esp_http_client_cleanup(client);
      } while (ret != ESP_OK || (maxRetry--) > 0);
+
+     vTaskDelete(NULL);
 }
 
 // Function to handle update secretKey and apiKey interval 10 minutes
@@ -387,7 +398,8 @@ void setup_diffie_hellman()
      bool apiKeyValid = false;
      if (ret == ESP_OK)
      {
-          ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey found in NVS, checking apiKey is valid...");
+          ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey found in NVS: %s", apiKey);
+          ESP_LOGI(TAG_DIFFIE_HELLMAN, "checking apiKey is valid...");
           apiKeyValid = is_api_valid();
      }
 

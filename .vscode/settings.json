@@ -10,6 +10,7 @@
 		"esp_event.h": "c",
 		"esp32cam_security_gate.h": "c",
 		"esp_netif.h": "c",
-		"setup_diffie_hellman.h": "c"
+		"setup_diffie_hellman.h": "c",
+		"*.inc": "cpp"
 	}
 }

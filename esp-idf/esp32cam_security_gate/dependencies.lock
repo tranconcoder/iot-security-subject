@@ -13,25 +13,25 @@ dependencies:
   aes-custom:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/aes-custom
+      path: D:\Workspace\iot-security-subject\esp-idf\components\aes-custom
       type: local
     version: '*'
   common_struct:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/common_struct
+      path: D:\Workspace\iot-security-subject\esp-idf\components\common_struct
       type: local
     version: '*'
   config_http_client:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/config_http_client
+      path: D:\Workspace\iot-security-subject\esp-idf\esp32cam_security_gate\main\components\config_http_client
       type: local
     version: '*'
   esp-idf-rc522:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/esp-idf-rc522
+      path: D:\Workspace\iot-security-subject\esp-idf\components\esp-idf-rc522
       type: local
     version: 2.6.0
   esp-websocket_client:
@@ -39,7 +39,7 @@ dependencies:
     - name: idf
       version: '>=5.0'
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/esp-websocket_client
+      path: D:\Workspace\iot-security-subject\esp-idf\components\esp-websocket_client
       type: local
     version: 1.2.3
   espressif/cmake_utilities:
@@ -188,35 +188,35 @@ dependencies:
   http_client_utils:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/http_client_utils
+      path: D:\Workspace\iot-security-subject\esp-idf\components\http_client_utils
       type: local
     version: '*'
   idf:
     source:
       type: idf
-    version: 5.2.3
+    version: 5.3.1
   setup_diffie_hellman:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_diffie_hellman
+      path: D:\Workspace\iot-security-subject\esp-idf\esp32cam_security_gate\main\components\setup_diffie_hellman
       type: local
     version: '*'
   setup_esp32_cam:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_esp32_cam
+      path: D:\Workspace\iot-security-subject\esp-idf\esp32cam_security_gate\main\components\setup_esp32_cam
       type: local
     version: '*'
   setup_esp_websocket_client:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_esp_websocket_client
+      path: D:\Workspace\iot-security-subject\esp-idf\esp32cam_security_gate\main\components\setup_esp_websocket_client
       type: local
     version: '*'
   setup_rc522:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_rc522
+      path: D:\Workspace\iot-security-subject\esp-idf\esp32cam_security_gate\main\components\setup_rc522
       type: local
     version: '*'
 direct_dependencies:

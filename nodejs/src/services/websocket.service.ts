@@ -22,7 +22,6 @@ export default function runWebsocketService(
 	HOST: string,
 	PORT: number
 ) {
-<<<<<<< HEAD
 	wss.on(
 		'connection',
 		async function connection(ws: WebSocketCustom, req: Request) {
@@ -32,44 +31,13 @@ export default function runWebsocketService(
 			if (Array.isArray(source)) source = source[0];
 
 			// Set connection state
-			ws.id = uuidv4();
 			ws.source = source as string;
 			ws.on('error', console.error);
-=======
-	wss.on('connection', function connection(ws: WebSocketCustom, req: Request) {
-		// Validate connection
-		const { query } = url.parse(req.url, true);
-		let source = query.source || WebSocketSourceEnum.INVALID_SOURCE;
-		const apiKey = query.apiKey || null;
-		if (Array.isArray(source)) source = source[0];
-
-		console.log(req.headers);
-		console.log({ apiKey });
-
-		// Set connection state
-		ws.id = uuidv4();
-		ws.source = source as string;
-		ws.on('error', console.error);
-
-		console.log(`Client ${ws.id} connected`);
->>>>>>> parent of c157bc4a (backup)
-
-		switch (ws.source) {
-			case WebSocketSourceEnum.ESP32CAM_SECURITY_GATE_SEND_IMG:
-				// Handle append video frames to stream
-				ws.on('message', async function message(buffer: Buffer) {
-					websocketAnalytics.transferData(buffer.byteLength, 1);
-					readStreamEsp32CamSecurityGateImg.push(buffer);
-				});
-				break;
-
-<<<<<<< HEAD
 			switch (ws.source) {
 				case WebSocketSourceEnum.ESP32CAM_SECURITY_GATE_SEND_IMG:
 					// Handle append video frames to stream
 					ws.on('message', async function message(buffer: Buffer) {
 						websocketAnalytics.transferData(buffer.byteLength, 1);
-
 						readStreamEsp32CamSecurityGateImg.push(buffer);
 					});
 					break;
@@ -85,20 +53,8 @@ export default function runWebsocketService(
 					console.log('Source is not valid!');
 					ws.close();
 			}
-=======
-			case WebSocketSourceEnum.ESP32CAM_MONITOR_SEND_IMG:
-				ws.on('message', async function message(buffer: Buffer) {
-					readStreamEsp32CamMonitorImg.push(buffer);
-				});
-				break;
-
-			case WebSocketSourceEnum.INVALID_SOURCE:
-			default:
-				console.log('Source is not valid!');
-				ws.close();
->>>>>>> parent of c157bc4a (backup)
 		}
-	});
+	);
 
 	wss.on('listening', () => {
 		console.log(`WebSocket Server is listening on ws://${HOST}:${PORT}`);
