@@ -30,20 +30,7 @@ export default function runWebsocketService(
 			// Validate connection
 			const { query } = url.parse(req.url, true);
 			let source = query.source || WebSocketSourceEnum.INVALID_SOURCE;
-			const apiKey = req.headers['x-api-key'] || null;
 			if (Array.isArray(source)) source = source[0];
-
-			let aesKey: string | undefined;
-			if (apiKey) {
-				aesKey = (await AESModel.findOne({ APIKEY: apiKey }).lean())?.SKey;
-
-				// aesKey = crypto
-				// 	.createHash('sha256')
-				// 	.update(aesKey as string)
-				// 	.digest('base64')
-				// 	.substr(0, 32);
-				console.log(aesKey);
-			}
 
 			// Set connection state
 			ws.id = uuidv4();
@@ -56,24 +43,9 @@ export default function runWebsocketService(
 				case WebSocketSourceEnum.ESP32CAM_SECURITY_GATE_SEND_IMG:
 					// Handle append video frames to stream
 					ws.on('message', async function message(buffer: Buffer) {
-						if (aesKey) {
-							websocketAnalytics.transferData(buffer.byteLength, 1);
+						websocketAnalytics.transferData(buffer.byteLength, 1);
 
-							function decryptData(buffer: Buffer, aesKey: string): Buffer {
-								const decipher = crypto.createDecipheriv(
-									'aes-256-cbc',
-									aesKey,
-									buffer.subarray(0, 16)
-								);
-								let decrypted = Buffer.concat([
-									decipher.update(buffer.subarray(16)),
-									decipher.final(),
-								]);
-								return decrypted;
-							}
-
-							readStreamEsp32CamSecurityGateImg.push(buffer);
-						}
+						readStreamEsp32CamSecurityGateImg.push(buffer);
 					});
 					break;
 
