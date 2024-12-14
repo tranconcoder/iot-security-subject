@@ -61,7 +61,7 @@ dependencies:
       type: service
     version: 2.0.15
   espressif/esp_modem:
-    component_hash: d8c4c84e1bddf898e2167be1d264429a3c3e72a0b622da97e6338ca8c2e672ad
+    component_hash: 681d7c8417ce0f2a11a562c6998b7b379a4847be41d84673c11c0c7a6b00e918
     dependencies:
     - name: idf
       require: private
@@ -69,7 +69,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.2.1
+    version: 1.3.0
   espressif/esp_modem_usb_dte:
     component_hash: 49f66a3bd49202e36168cf092a1dc453548d488e8f4560ac7e7d21802583e8a7
     dependencies:
@@ -185,10 +185,10 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 2.0.6
-  http_client:
+  http_client_utils:
     dependencies: []
     source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/http_client
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/http_client_utils
       type: local
     version: '*'
   idf:
@@ -205,6 +205,12 @@ dependencies:
     dependencies: []
     source:
       path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_esp32_cam
+      type: local
+    version: '*'
+  setup_esp_websocket_client:
+    dependencies: []
+    source:
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/setup_esp_websocket_client
       type: local
     version: '*'
   setup_rc522:
@@ -225,11 +231,12 @@ direct_dependencies:
 - espressif/esp_tinyusb
 - espressif/mesh_lite
 - espressif/tinyusb
-- http_client
+- http_client_utils
 - idf
 - setup_diffie_hellman
 - setup_esp32_cam
+- setup_esp_websocket_client
 - setup_rc522
-manifest_hash: c023d9595d7bab84b12bfb44d329484902ddf48bc95f11adeecf70854a3ae313
+manifest_hash: ca41d9627418433cc07264a1c865fabd99d8795670dd03b207724a01c08c161f
 target: esp32s3
 version: 2.0.0

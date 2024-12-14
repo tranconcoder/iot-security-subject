@@ -1,4 +1,5 @@
 #include "esp32cam_security_gate.h"
+#include "esp_http_client.h"
 
 // TASK STACK SIZE
 #define STACK_SIZE 4 * 1024
@@ -64,8 +65,8 @@ void wifi_init_sta(void)
 
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = EXAMPLE_ESP_WIFI_SSID,
-            .password = EXAMPLE_ESP_WIFI_PASS,
+            .ssid = CONFIG_ROUTER_SSID,
+            .password = CONFIG_ROUTER_PASSWORD,
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
         },
     };

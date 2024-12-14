@@ -26,7 +26,7 @@ void ws_connected_cb()
 
      if (pv_task_send_image_to_websocket != NULL)
      {
-         vTaskResume(pv_task_send_image_to_websocket);
+          vTaskResume(pv_task_send_image_to_websocket);
      }
 
      ESP_LOGI(TAG, "WebSocket client connected");
@@ -67,12 +67,7 @@ void task_send_image_to_websocket()
                continue;
           }
 
-          char enc_iv[16] = "1234567890123456";
-          memcpy(enc_input, (char *)fb->buf, fb->len);
-
-          encrypt_any_length_string(enc_input, (uint8_t *)fb->buf, (uint8_t *)enc_iv);
-
-          int send_result = esp_websocket_client_send_bin(ws_client, (char *)enc_input, sizeof(enc_input), 5000 / portTICK_PERIOD_MS);
+          int send_result = esp_websocket_client_send_bin(ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
 
           // Free allocated memory
           free(enc_input);
@@ -99,7 +94,6 @@ void task_send_image_to_websocket()
 
 void setup_esp_websocket_client_init(int *g_sockfd)
 {
-     ws_cfg.headers = headers;
      ws_client = esp_websocket_client_init(&ws_cfg);
 
      xTaskCreate(

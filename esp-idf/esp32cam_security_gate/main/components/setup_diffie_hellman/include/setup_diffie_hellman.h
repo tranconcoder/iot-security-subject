@@ -6,7 +6,7 @@
 #include "mbedtls/bignum.h"
 #include "cJSON.h"
 #include "common_struct.h"
-#include "http_client.h"
+#include "http_client_utils.h"
 
 uint64_t getSecretKey();
 uint64_t getApiKey();

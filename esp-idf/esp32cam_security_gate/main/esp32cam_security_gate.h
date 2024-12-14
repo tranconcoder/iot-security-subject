@@ -4,8 +4,8 @@
 #include "freertos/task.h"
 #include "esp_mac.h"
 #include "esp_wifi.h"
-#include "esp_bridge.h"
-#include "esp_mesh_lite.h"
+// #include "esp_bridge.h"
+// #include "esp_mesh_lite.h"
 #include "esp_log.h"
 #include <esp_system.h>
 #include "nvs_flash.h"

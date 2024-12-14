@@ -3,14 +3,14 @@ dependencies:
   espressif/tinyusb: '^0.17.0~1'
   espressif/esp_tinyusb: '^1.5.0'
   espressif/esp_modem_usb_dte: '^1.2.1'
-  http_client:
-    path: '../../components/http_client'
+  http_client_utils:
+    path: '../../components/http_client_utils'
   setup_rc522:
     path: './components/setup_rc522'
   setup_esp32_cam:
     path: './components/setup_esp32_cam'
-  # setup_esp_websocket_client:
-  #   path: "./components/setup_esp_websocket_client"
+  setup_esp_websocket_client:
+    path: './components/setup_esp_websocket_client'
   config_http_client:
     path: ./components/config_http_client
   esp-idf-rc522:
