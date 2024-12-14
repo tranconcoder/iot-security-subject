@@ -1,10 +1,10 @@
 #include "setup_diffie_hellman.h"
-#include "mbedtls/bignum.h"
-#include "esp_random.h"
 
+const uint16_t MAX_HTTP_OUTPUT_BUFFER = 2048;
+const char *TAG = "setup_diffie_hellman";
 const char *HEADER_API_KEY = "X-API-KEY";
 
-struct key_struct
+typedef struct
 {
      uint64_t aKey;
      uint64_t pKey;
@@ -12,34 +12,36 @@ struct key_struct
      uint64_t AKey;
      uint64_t BKey;
      uint64_t SKey;
-     char *to_json()
+} key_struct;
+
+key_struct *keys = NULL;
+nvs_handle_t my_nvs_handle;
+
+char *to_json(key_struct *keys)
+{
+     if (keys == NULL)
      {
-          if (keys == NULL)
-          {
-               return NULL;
-          }
-
-          cJSON *json = cJSON_CreateObject();
-          if (json == NULL)
-          {
-               return NULL;
-          }
-
-          cJSON_AddNumberToObject(json, "aKey", aKey);
-          cJSON_AddNumberToObject(json, "pKey", pKey);
-          cJSON_AddNumberToObject(json, "gKey", gKey);
-          cJSON_AddNumberToObject(json, "AKey", AKey);
-          cJSON_AddNumberToObject(json, "BKey", BKey);
-          cJSON_AddNumberToObject(json, "SKey", SKey);
-
-          char *json_str = cJSON_PrintUnformatted(json);
-          cJSON_Delete(json);
-
-          return json_str;
+          return NULL;
      }
-} *keys = NULL;
 
-esp_err_t http_event_handle(esp_http_client_event_t *evt);
+     cJSON *json = cJSON_CreateObject();
+     if (json == NULL)
+     {
+          return NULL;
+     }
+
+     cJSON_AddNumberToObject(json, "aKey", keys->aKey);
+     cJSON_AddNumberToObject(json, "pKey", keys->pKey);
+     cJSON_AddNumberToObject(json, "gKey", keys->gKey);
+     cJSON_AddNumberToObject(json, "AKey", keys->AKey);
+     cJSON_AddNumberToObject(json, "BKey", keys->BKey);
+     cJSON_AddNumberToObject(json, "SKey", keys->SKey);
+
+     char *json_str = cJSON_PrintUnformatted(json);
+     cJSON_Delete(json);
+
+     return json_str;
+}
 
 static char *apiKey;
 
@@ -47,54 +49,50 @@ static char *apiKey;
 void generateKey()
 {
      int ret = 1;
-     keys = malloc(sizeof(struct key_struct));
+     keys = malloc(sizeof(key_struct));
      mbedtls_mpi pKey_mpi, gKey_mpi, aKey_mpi, AKey_mpi;
 
      while (ret)
      {
-          try
+          keys->gKey = esp_random() % UINT8_MAX;                   // gKey: 0 -> 100
+          keys->pKey = MIN(keys->gKey + esp_random(), UINT32_MAX); // pKey: gKey -> 2^32
+          keys->aKey = esp_random() % keys->pKey;                  // aKey: 1 -> pKey
+
+          // Calculate AKey
+          mbedtls_mpi_init(&pKey_mpi);
+          mbedtls_mpi_init(&gKey_mpi);
+          mbedtls_mpi_init(&aKey_mpi);
+          mbedtls_mpi_init(&AKey_mpi);
+
+          if ((ret = mbedtls_mpi_lset(&pKey_mpi, keys->pKey)) != 0 ||
+              (ret = mbedtls_mpi_lset(&gKey_mpi, keys->gKey)) != 0 ||
+              (ret = mbedtls_mpi_lset(&aKey_mpi, keys->aKey)) != 0)
           {
-               keys->gKey = esp_random() % UINT8_MAX;                   // gKey: 0 -> 100
-               keys->pKey = MIN(keys->gKey + esp_random(), UINT32_MAX); // pKey: gKey -> 2^32
-               keys->aKey = esp_random() % keys->pKey;                  // aKey: 1 -> pKey
-
-               // Calculate AKey
-               mbedtls_mpi_init(&pKey_mpi);
-               mbedtls_mpi_init(&gKey_mpi);
-               mbedtls_mpi_init(&aKey_mpi);
-               mbedtls_mpi_init(&AKey_mpi);
-
-               if ((ret = mbedtls_mpi_lset(&pKey_mpi, pKey)) != 0 ||
-                   (ret = mbedtls_mpi_lset(&gKey_mpi, gKey)) != 0 ||
-                   (ret = mbedtls_mpi_lset(&aKey_mpi, aKey)) != 0)
-               {
-                    ESP_LOGE(TAG, "Failed to set MPI values: %d", ret);
-                    throw;
-               }
-
-               // Calculate AKey = gKey^aKey % pKey
-               if ((ret = mbedtls_mpi_exp_mod(&AKey_mpi, &gKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
-               {
-                    ESP_LOGE(TAG, "Failed to calculate exp mod: %d", ret);
-                    throw;
-               }
-               if ((ret = mbedtls_mpi_write_binary(&AKey_mpi, (unsigned char *)&keys->AKey, sizeof(keys->AKey))) != 0)
-               {
-                    ESP_LOGE(TAG, "Failed to write AKey to binary: %d", ret);
-                    throw;
-               }
+               ESP_LOGE(TAG, "Failed to set MPI values: %d", ret);
+               goto cleanup_generate_key;
           }
-          catch ()
+
+          // Calculate AKey = gKey^aKey % pKey
+          if ((ret = mbedtls_mpi_exp_mod(&AKey_mpi, &gKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
           {
-               mbedtls_mpi_free(&pKey_mpi);
-               mbedtls_mpi_free(&gKey_mpi);
-               mbedtls_mpi_free(&aKey_mpi);
-               mbedtls_mpi_free(&AKey_mpi);
+               ESP_LOGE(TAG, "Failed to calculate exp mod: %d", ret);
+               goto cleanup_generate_key;
           }
+          if ((ret = mbedtls_mpi_write_binary(&AKey_mpi, (unsigned char *)&keys->AKey, sizeof(keys->AKey))) != 0)
+          {
+               ESP_LOGE(TAG, "Failed to write AKey to binary: %d", ret);
+               goto cleanup_generate_key;
+          }
+
+     cleanup_generate_key:
+          mbedtls_mpi_free(&pKey_mpi);
+          mbedtls_mpi_free(&gKey_mpi);
+          mbedtls_mpi_free(&aKey_mpi);
+          mbedtls_mpi_free(&AKey_mpi);
      }
 }
 
-void handle_http_event_new(esp_http_client_event_t *evt)
+void handle_http_event_new_key(esp_http_client_event_t *evt)
 {
      // Handle print event information
      print_http_event(evt);
@@ -139,7 +137,7 @@ void handle_http_event_new(esp_http_client_event_t *evt)
                          if (output_buffer == NULL)
                          {
                               ESP_LOGE(TAG, "Failed to allocate memory for output buffer");
-                              return ESP_FAIL;
+                              return;
                          }
                     }
                     copy_len = MIN(evt->data_len, (content_len - output_len));
@@ -181,164 +179,216 @@ void handle_http_event_new(esp_http_client_event_t *evt)
           }
           output_len = 0;
           break;
+
+     default:
      }
+}
+
+esp_err_t load_key_from_nvs()
+{
+     // Load NVS
+     esp_err_t ret = nvs_open("storage", NVS_READONLY, &my_nvs_handle);
+
+     if (ret == ESP_OK)
+     {
+          size_t required_size_api_key;
+          nvs_get_str(my_nvs_handle, "apiKey", NULL, &required_size_api_key);
+
+          apiKey = malloc(required_size_api_key);
+
+          nvs_get_str(my_nvs_handle, "apiKey", apiKey, &required_size_api_key);
+          nvs_get_u64(my_nvs_handle, "secretKey", &keys->SKey);
+
+          nvs_close(my_nvs_handle);
+     }
+
+     return ret;
+}
+
+bool is_api_valid()
+{
+     esp_err_t ret;
+     bool result = false;
+
+     // Config HTTP client URI
+     char *url = heap_caps_malloc(100, MALLOC_CAP_SPIRAM);
+     sprintf(url, "http://%s:%d/api/aes/check-api-key", CONFIG_SERVER_IP, CONFIG_SERVER_PORT);
+
+     esp_http_client_config_t config = {
+         .url = url,
+         .event_handler = print_http_event,
+         .timeout_ms = 3000,
+         .keep_alive_enable = true,
+     };
+
+     // Handle HTTP request
+     int maxRetry = 3;
+     esp_http_client_handle_t client;
+     do
+     {
+          client = esp_http_client_init(&config);
+          esp_http_client_set_method(client, HTTP_METHOD_PUT);
+          esp_http_client_set_header(client, HEADER_API_KEY, apiKey);
+
+          ret = esp_http_client_perform(client);
+          if (ret == ESP_OK)
+          {
+               uint16_t code = esp_http_client_get_status_code(client);
+
+               ESP_LOGI(TAG, "HTTP PUT Status = %d, content_length = %llu",
+                        code,
+                        esp_http_client_get_content_length(client));
+
+               result = code == 200;
+          }
+          else
+          {
+               ESP_LOGE(TAG, "HTTP PUT request failed: %s", esp_err_to_name(ret));
+               ESP_LOGI(TAG, "Retrying...");
+               vTaskDelay(pdMS_TO_TICKS(300));
+          }
+     } while ((maxRetry--) > 0 && ret != ESP_OK);
+
+     // Cleanup
+     free(url);
+     esp_http_client_cleanup(client);
+
+     return result;
+}
+
+void get_new_key_from_server()
+{
+     // Config HTTP client URI
+     char *url = heap_caps_malloc(100, MALLOC_CAP_SPIRAM);
+     sprintf(url, "http://%s:%d/api/aes/init", CONFIG_SERVER_IP, CONFIG_SERVER_PORT);
+
+     esp_http_client_config_t config = {
+         .url = url,
+         .event_handler = handle_http_event_new_key,
+         .timeout_ms = 3000,
+         .keep_alive_enable = true,
+     };
+
+     // Generate new client key
+     generateKey(); // Save key on "keys" variable
+
+     uint8_t maxRetry = 3;
+     esp_err_t ret;
+     do
+     {
+          ESP_LOGI(TAG, "Sending new key to server...");
+
+          esp_http_client_handle_t client = esp_http_client_init(&config);
+
+          esp_http_client_set_method(client, HTTP_METHOD_POST);
+          // Remove SKey and aKey before Sending
+          uint64_t aKey = keys->aKey;
+          keys->aKey = 0;
+          keys->SKey = 0;
+          esp_http_client_set_post_field(client, to_json(keys), strlen(to_json(keys)));
+          ret = esp_http_client_perform(client);
+
+          if (ret == ESP_OK)
+          {
+               ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %llu",
+                        esp_http_client_get_status_code(client),
+                        esp_http_client_get_content_length(client));
+               ESP_LOGI(TAG, "Generate SKey...");
+
+               // Create Secret key from BKey
+               mbedtls_mpi BKey_mpi, SKey_mpi, aKey_mpi, pKey_mpi;
+
+               mbedtls_mpi_init(&BKey_mpi);
+               mbedtls_mpi_init(&SKey_mpi);
+               mbedtls_mpi_init(&aKey_mpi);
+               mbedtls_mpi_init(&pKey_mpi);
+
+               if ((ret = mbedtls_mpi_lset(&BKey_mpi, keys->BKey)) != 0 ||
+                   (ret = mbedtls_mpi_lset(&aKey_mpi, keys->aKey)) != 0 ||
+                   (ret = mbedtls_mpi_lset(&pKey_mpi, keys->pKey)) != 0)
+               {
+                    ESP_LOGE(TAG, "Failed to set MPI values: %d", ret);
+                    goto cleanup_get_new_key;
+               }
+
+               // Calculate SKey = BKey^aKey % pKey
+               if ((ret = mbedtls_mpi_exp_mod(&SKey_mpi, &BKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
+               {
+                    ESP_LOGE(TAG, "Failed to calculate SKey: %d", ret);
+                    goto cleanup_get_new_key;
+               }
+
+               // Convert SKey to int
+               if ((ret = mbedtls_mpi_write_binary(&SKey_mpi, (unsigned char *)&keys->SKey, sizeof(keys->SKey))) != 0)
+               {
+                    ESP_LOGE(TAG, "Failed to write SKey to binary: %d", ret);
+                    goto cleanup_get_new_key;
+               }
+
+               // Save key to NVS
+               nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
+               nvs_set_str(my_nvs_handle, "apiKey", apiKey);
+               nvs_set_i64(my_nvs_handle, "secretKey", keys->SKey);
+               nvs_commit(my_nvs_handle);
+               nvs_close(my_nvs_handle);
+
+          cleanup_get_new_key:
+               mbedtls_mpi_free(&BKey_mpi);
+               mbedtls_mpi_free(&SKey_mpi);
+               mbedtls_mpi_free(&aKey_mpi);
+               mbedtls_mpi_free(&pKey_mpi);
+          }
+          else
+          {
+               ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(ret));
+               ESP_LOGI(TAG, "Retrying...");
+               vTaskDelay(pdMS_TO_TICKS(300));
+          }
+     } while (ret != ESP_OK || (maxRetry--) > 0);
+}
+
+// Function to handle update secretKey and apiKey interval 10 minutes
+void handle_task_update_key()
+{
+     while (true)
+     {
+          // Update key every 10 minutes
+          vTaskDelay(pdMS_TO_TICKS(600000));
+
+          generateKey();
+          get_new_key_from_server();
+     }
+}
+
+uint64_t getSecretKey()
+{
+     return keys->SKey;
+}
+
+uint64_t getApiKey()
+{
+     return apiKey;
 }
 
 void setup_diffie_hellman()
 {
-     // Load NVS
-     esp_err_t ret = nvs_open("storage", NVS_READONLY, &nvs_handle);
-
-     if (ret == ESP_OK)
-     {
-          size_t required_size_api_key, required_size_secret_key;
-          nvs_get_str(nvs_handle, "apiKey", NULL, &required_size);
-          nvs_get_i64(nvs_handle, "secretKey", NULL, &required_size);
-
-          apiKey = malloc(required_size_api_key);
-          keys->SKey = malloc(required_size_secret_key);
-
-          nvs_get_str(nvs_handle, "apiKey", apiKey, &required_size_api_key);
-          nvs_get_str(nvs_handle, "secretKey", keys->SKey, &required_size_secret_key);
-
-          nvs_close(nvs_handle);
-     }
+     // Load key from NVS
+     esp_err_t ret = load_key_from_nvs();
 
      // Found apiKey ==> check if it's valid
      bool apiKeyValid = false;
      if (ret == ESP_OK)
      {
           ESP_LOGI(TAG, "apiKey found in NVS, checking apiKey is valid...");
-
-          // Config HTTP client URI
-          char *uri = heap_caps_malloc(100, MALLOC_CAP_SPIRAM);
-          char *headerKey = "X-API-KEY";
-          char *header = malloc(sizeof(headerKey) + sizeof(apiKey) + 3);
-
-          sprintf(uri, "http://%s:%d/api/aes/check-api-key", CONFIG_SERVER_IP, CONFIG_SERVER_PORT);
-          sprintf(header, "%s: %s", headerKey, apiKey);
-
-          esp_http_client_config_t config = {
-              .uri = &uri,
-              .event_handler = print_http_event,
-              .timeout_ms = 3000,
-              .keep_alive_enable = true,
-              .headers = header,
-          };
-
-          // Handle HTTP request
-          int maxRetry = 3;
-          do
-          {
-               esp_http_client_handle_t client = esp_http_client_init(&config);
-               esp_http_client_set_method(client, HTTP_METHOD_PUT);
-
-               ret = esp_http_client_perform(client);
-               if (ret == ESP_OK)
-               {
-                    uint16_t code = esp_http_client_get_status_code(client);
-
-                    ESP_LOGI(TAG, "HTTP PUT Status = %d, content_length = %llu",
-                             code,
-                             esp_http_client_get_content_length(client));
-
-                    apiKeyValid = code == 200;
-               }
-               else
-               {
-                    ESP_LOGE(TAG, "HTTP PUT request failed: %s", esp_err_to_name(ret));
-                    ESP_LOGI(TAG, "Retrying...");
-                    vTaskDelay(pdMS_TO_TICKS(300));
-               }
-          } while ((maxRetry--) > 0 && ret != ESP_OK);
-
-          // Cleanup
-          free(headerKey);
-          free(header);
-          free(uri);
-          esp_http_client_cleanup(client);
+          apiKeyValid = is_api_valid();
      }
 
      // Not found apiKey ==> Get new apiKey
      if (ret != ESP_OK || !apiKeyValid)
      {
           ESP_LOGI(TAG, "Key not found or invalid, getting new apiKey...");
-
-          // Config HTTP client URI
-          char *uri = heap_caps_malloc(100, MALLOC_CAP_SPIRAM);
-          sprintf(uri, "http://%s:%d/api/aes/init", CONFIG_SERVER_IP, CONFIG_SERVER_PORT);
-
-          esp_http_client_config_t config = {
-              .uri = &uri,
-              .event_handler = http_event_handle,
-              .timeout_ms = 3000,
-              .keep_alive_enable = true,
-          };
-
-          // Generate new client key
-          generateKey(); // Save key on "keys" variable
-
-          uint8_t maxRetry = 3;
-          do
-          {
-               ESP_LOGI(TAG, "Sending new key to server...");
-
-               esp_client_handle_t client = esp_http_client_init(&config);
-
-               esp_http_client_set_method(client, HTTP_METHOD_POST);
-               esp_http_client_set_post_field(client, keys->to_json(), strlen(keys->to_json()));
-               ret = esp_http_client_perform(client);
-
-               if (ret == ESP_OK)
-               {
-                    ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %llu",
-                             esp_http_client_get_status_code(client),
-                             esp_http_client_get_content_length(client));
-                    ESP_LOGI(TAG, "Generate SKey...");
-
-                    // Create Secret key from BKey
-                    mbedtls_mpi BKey_mpi, SKey_mpi, aKey_mpi, pKey_mpi;
-
-                    mbedtls_mpi_init(&BKey_mpi);
-                    mbedtls_mpi_init(&SKey_mpi);
-                    mbedtls_mpi_init(&aKey_mpi);
-                    mbedtls_mpi_init(&pKey_mpi);
-
-                    if ((ret = mbedtls_mpi_lset(&BKey_mpi, keys->BKey)) != 0 ||
-                        (ret = mbedtls_mpi_lset(&aKey_mpi, keys->aKey)) != 0 ||
-                        (ret = mbedtls_mpi_lset(&pKey_mpi, keys->pKey)) != 0)
-                    {
-                         ESP_LOGE(TAG, "Failed to set MPI values: %d", ret);
-                         continue;
-                    }
-
-                    // Calculate SKey = BKey^aKey % pKey
-                    if ((ret = mbedtls_mpi_exp_mod(&SKey_mpi, &BKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
-                    {
-                         ESP_LOGE(TAG, "Failed to calculate SKey: %d", ret);
-                         continue;
-                    }
-
-                    // Convert SKey to int
-                    if ((ret = mbedtls_mpi_write_binary(&SKey_mpi, (unsigned char *)&keys->SKey, sizeof(keys->SKey))) != 0)
-                    {
-                         ESP_LOGE(TAG, "Failed to write SKey to binary: %d", ret);
-                         continue;
-                    }
-
-                    // Save key to NVS
-                    nvs_open("storage", NVS_READWRITE, &nvs_handle);
-                    nvs_set_str(nvs_handle, "apiKey", apiKey);
-                    nvs_set_i64(nvs_handle, "secretKey", keys->SKey);
-                    nvs_commit(nvs_handle);
-                    nvs_close(nvs_handle);
-               }
-               else
-               {
-                    ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(ret));
-                    ESP_LOGI(TAG, "Retrying...");
-                    vTaskDelay(pdMS_TO_TICKS(300));
-               }
-          } while (ret != ESP_OK || (maxRetry--) > 0);
+          get_new_key_from_server();
      }
+
+     xTaskCreate(handle_task_update_key, "task_update_key", 4096, NULL, 5, NULL);
 }

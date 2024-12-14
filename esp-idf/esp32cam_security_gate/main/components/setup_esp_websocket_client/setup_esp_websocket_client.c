@@ -11,220 +11,22 @@
 
 const char *TAG = "websocket_client";
 
-char headers[32 + 1];
-
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
 esp_websocket_client_config_t ws_cfg = {
     .uri = "ws://192.168.1.210:3000/?source=esp32cam_security_gate_send_img",
     .buffer_size = 16 * 1024,
     .reconnect_timeout_ms = 500,
     .network_timeout_ms = 5000,
-    .headers = headers,
 };
 
-esp_websocket_client_handle_t *ws_client = NULL;
-char SKey_str[256];
-char *apiKey;
-char *resData = NULL;
-size_t resDataLen = 0;
-
-esp_err_t http_event_handle(esp_http_client_event_t *evt)
-{
-     switch (evt->event_id)
-     {
-     case HTTP_EVENT_ON_CONNECTED:
-          ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
-          // Clear resData when new connection established
-          if (resData != NULL)
-          {
-               memset(resData, 0, resDataLen);
-               resDataLen = 0;
-          }
-          break;
-
-     case HTTP_EVENT_ON_HEADER:
-          ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER");
-          char key[10];
-          sprintf(key, "%s", evt->header_key);
-          printf("'%s': %s", evt->header_key, (char *)evt->header_value);
-
-          if (strcmp(key, "X-API-KEY") == 0)
-          {
-               apiKey = (char *)evt->header_value;
-               store_api_key(apiKey); // Store apiKey in NVS
-          }
-          break;
-
-     case HTTP_EVENT_ON_FINISH:
-          ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
-          printf("%.*s", evt->data_len, (char *)evt->data);
-          break;
-
-     case HTTP_EVENT_ON_DATA:
-          if (!esp_http_client_is_chunked_response(evt->client))
-          {
-               ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-               char *data = malloc(evt->data_len + 1);
-               if (data == NULL)
-               {
-                    ESP_LOGE(TAG, "Failed to allocate memory for data");
-                    return ESP_FAIL;
-               }
-               sprintf(data, "%.*s", evt->data_len, (char *)evt->data);
-
-               // Reallocate resData to accommodate new data
-               char *newResData = realloc(resData, resDataLen + evt->data_len + 1);
-               if (newResData == NULL)
-               {
-                    ESP_LOGE(TAG, "Failed to reallocate memory for resData");
-                    free(data);
-                    return ESP_FAIL;
-               }
-               resData = newResData;
-
-               // Concatenate new data to resData
-               memcpy(resData + resDataLen, data, evt->data_len);
-               resDataLen += evt->data_len;
-               resData[resDataLen] = '\0'; // Null-terminate the string
-
-               free(data);
-          }
-          break;
-     default:
-     }
-
-     return ESP_OK;
-};
-
-void handleGetNewApiKey()
-{
-     // Generate random numbers for pKey, gKey, and AKey
-     client = esp_http_client_init(&http_webserver_config);
-     size_t gKey;
-     size_t pKey;
-     uint32_t aKey;
-
-run:
-     gKey = esp_random() % 100;
-     pKey = gKey + (esp_random() % 1000000000000); //  1 Nghìn tỷ
-     aKey = esp_random() % pKey;
-
-     mbedtls_mpi pKey_mpi, gKey_mpi, aKey_mpi, AKey_mpi, BKey_mpi, SKey_mpi;
-     mbedtls_mpi_init(&pKey_mpi);
-     mbedtls_mpi_init(&BKey_mpi);
-     mbedtls_mpi_init(&SKey_mpi);
-     mbedtls_mpi_init(&gKey_mpi);
-     mbedtls_mpi_init(&aKey_mpi);
-     mbedtls_mpi_init(&AKey_mpi);
-
-     int ret;
-     if ((ret = mbedtls_mpi_lset(&pKey_mpi, pKey)) != 0 ||
-         (ret = mbedtls_mpi_lset(&gKey_mpi, gKey)) != 0 ||
-         (ret = mbedtls_mpi_lset(&aKey_mpi, aKey)) != 0)
-     {
-          ESP_LOGE(TAG, "Failed to set MPI values: %d", ret);
-          goto cleanup;
-     }
-
-     // Calculate AKey = gKey^aKey % pKey
-     if ((ret = mbedtls_mpi_exp_mod(&AKey_mpi, &gKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
-     {
-          ESP_LOGE(TAG, "Failed to calculate exp mod: %d", ret);
-          goto run;
-     }
-
-     char AKey_str[256];
-     size_t olen;
-     if ((ret = mbedtls_mpi_write_string(&AKey_mpi, 10, AKey_str, sizeof(AKey_str), &olen)) != 0)
-     {
-          ESP_LOGE(TAG, "Failed to write MPI to string: %d", ret);
-          goto cleanup;
-     }
-
-     // Create JSON
-     char json_string[512];
-     snprintf(json_string, sizeof(json_string), "{\"pKey\": %lu, \"gKey\": %lu, \"AKey\": \"%s\"}",
-              (unsigned long)pKey, (unsigned long)gKey, AKey_str);
-
-     // Continue with websocket setup only if no errors occurred
-     ESP_LOGI(TAG, "========= Generated keys: pKey=%lu, gKey=%lu, AKey=%s, aKey=%lu", (unsigned long)pKey, (unsigned long)gKey, AKey_str, aKey);
-     esp_http_client_set_method(client, HTTP_METHOD_POST);
-     esp_http_client_set_header(client, "Content-Type", "application/json");
-     if (apiKey)
-     {
-          esp_http_client_set_header(client, "X-API-KEY", apiKey);
-     }
-     esp_http_client_set_post_field(client, json_string, strlen(json_string));
-
-     esp_err_t err = esp_http_client_perform(client);
-     if (err == ESP_OK)
-     {
-          ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %llu",
-                   esp_http_client_get_status_code(client),
-                   esp_http_client_get_content_length(client));
-          ESP_LOGI(TAG, "Response: %s", resData);
-
-          char *trimmedResData = malloc(resDataLen - 1);
-          if (trimmedResData == NULL)
-          {
-               ESP_LOGE(TAG, "Failed to allocate memory for trimmedResData");
-               goto cleanup;
-          }
-          strncpy(trimmedResData, resData + 1, resDataLen - 2);
-          trimmedResData[resDataLen - 2] = '\0';
-
-          ESP_LOGI(TAG, "Trimmed response: %s", trimmedResData);
-
-          // Read BKey from string
-          if ((ret = mbedtls_mpi_read_string(&BKey_mpi, 10, trimmedResData)) != 0)
-          {
-               ESP_LOGE(TAG, "Failed to read BKey from string: %d", ret);
-               free(trimmedResData);
-               goto cleanup;
-          }
-          free(trimmedResData);
-
-          // Calculate SKey = BKey^aKey % pKey
-          if ((ret = mbedtls_mpi_exp_mod(&SKey_mpi, &BKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
-          {
-               ESP_LOGE(TAG, "Failed to calculate SKey: %d", ret);
-               goto cleanup;
-          }
-
-          // Convert SKey to string
-          uint8_t hash[32];
-          if ((ret = mbedtls_mpi_write_binary(&SKey_mpi, hash, sizeof(hash))) != 0)
-          {
-               ESP_LOGE(TAG, "Failed to write SKey to binary: %d", ret);
-          }
-          for (int i = 0; i < sizeof(hash); i++)
-          {
-               sprintf(SKey_str + (i * 2), "%02x", hash[i]);
-          }
-
-          ESP_LOGI(TAG, "Calculated shared secret (SKey): %s", SKey_str);
-
-          vTaskResume(pv_task_send_image_to_websocket);
-     }
-
-cleanup:
-     // Cleanup resources
-     mbedtls_mpi_free(&pKey_mpi);
-     mbedtls_mpi_free(&gKey_mpi);
-     mbedtls_mpi_free(&aKey_mpi);
-     mbedtls_mpi_free(&AKey_mpi);
-     mbedtls_mpi_free(&BKey_mpi);
-     mbedtls_mpi_free(&SKey_mpi);
-
-     esp_http_client_cleanup(client);
-}
+esp_websocket_client_handle_t ws_client = NULL;
 
 void ws_connected_cb()
 {
 
      if (pv_task_send_image_to_websocket != NULL)
      {
-          handleGetNewApiKey();
+         vTaskResume(pv_task_send_image_to_websocket);
      }
 
      ESP_LOGI(TAG, "WebSocket client connected");
@@ -297,15 +99,6 @@ void task_send_image_to_websocket()
 
 void setup_esp_websocket_client_init(int *g_sockfd)
 {
-     resData = heap_caps_malloc(1000, MALLOC_CAP_SPIRAM);
-     if (resData == NULL)
-     {
-          ESP_LOGE(TAG, "Failed to allocate memory for resData");
-          return;
-     }
-
-     load_api_key(); // Load apiKey from NVS
-
      ws_cfg.headers = headers;
      ws_client = esp_websocket_client_init(&ws_cfg);
 

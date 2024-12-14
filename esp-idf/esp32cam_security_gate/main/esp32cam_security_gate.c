@@ -136,6 +136,7 @@ void app_main()
     s->set_saturation(s, 200);
     s->set_sharpness(s, 200);
 
-    setup_esp_websocket_client_init();
+    setup_diffie_hellman();
+    // setup_esp_websocket_client_init();
     // setup_rc522();
 }

@@ -1,6 +1,4 @@
 #include "common_struct.h"
-#include <stdlib.h>
-#include <time.h>
 
 long int generate_long_int()
 {

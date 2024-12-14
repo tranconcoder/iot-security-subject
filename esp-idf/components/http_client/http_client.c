@@ -2,14 +2,17 @@
 
 static const char *TAG = "HTTP_EVENT";
 
-void print_http_event(esp_http_client_event_t *evt)
+esp_err_t print_http_event(esp_http_client_event_t *evt)
 {
-     ESP_LOGI(TAG, "Handle event for url: %s", evt->client->config->uri);
+     char url[200];
+     esp_http_client_get_url(evt->client, url, 200);
+     ESP_LOGI(TAG, "Handle event for url: %s", url);
 
      switch (evt->event_id)
      {
      case HTTP_EVENT_ERROR:
           ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
+          return ESP_FAIL;
           break;
      case HTTP_EVENT_ON_CONNECTED:
           ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
@@ -33,5 +36,6 @@ void print_http_event(esp_http_client_event_t *evt)
           ESP_LOGD(TAG, "HTTP_EVENT_REDIRECT");
           break;
      }
+
      return ESP_OK;
 }

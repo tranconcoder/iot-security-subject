@@ -19,8 +19,8 @@
 #include "setup_rc522.h"
 #include "setup_esp32_cam.h"
 #include "config_http_client.h"
-#include "esp_websocket_client.h"
-#include "setup_esp_websocket_client.h"
+// #include "setup_esp_websocket_client.h"
+#include "setup_diffie_hellman.h"
 
 #include "esp_tls.h"
 #include "esp_event.h"
