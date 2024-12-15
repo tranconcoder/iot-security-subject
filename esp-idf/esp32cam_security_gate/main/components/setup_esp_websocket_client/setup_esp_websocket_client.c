@@ -90,7 +90,7 @@ void task_send_image_to_websocket(params_struct *params)
           }
 
           // Add small delay to prevent tight loop
-          // vTaskDelay(100 / portTICK_PERIOD_MS);
+          // vTaskDelay(10 / portTICK_PERIOD_MS);
      }
 }
 

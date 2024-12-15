@@ -151,7 +151,6 @@ void handle_http_event_new_key(esp_http_client_event_t *evt)
           // Save x-api-key value to variable
           if (strcmp(api_header_key, HEADER_API_KEY) == 0)
           {
-               apiKey = heap_caps_realloc(apiKey, strlen(evt->header_value) + 1, MALLOC_CAP_SPIRAM);
                sprintf(apiKey, "%s", evt->header_value);
                ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey: %s", apiKey);
           }
@@ -194,8 +193,6 @@ esp_err_t load_key_from_nvs()
           ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error get size of apiKey: %s", esp_err_to_name(ret));
           goto load_key_fail;
      }
-
-     apiKey = malloc(required_size_api_key);
 
      if ((ret = nvs_get_str(my_nvs_handle, "apiKey", apiKey, &required_size_api_key)) != ESP_OK)
      {
@@ -398,6 +395,7 @@ void handle_task_update_key()
 void setup_diffie_hellman()
 {
      // Load key from NVS
+     apiKey = malloc(100);
      keys = malloc(sizeof(key_struct));
      keys->SKey = malloc(sizeof(uint64_t));
      esp_err_t ret = load_key_from_nvs();
@@ -416,6 +414,10 @@ void setup_diffie_hellman()
      {
           ESP_LOGI(TAG_DIFFIE_HELLMAN, "Key not found or invalid, getting new apiKey...");
           xTaskCreate(get_new_key_from_server, "get_new_key_from_server", 4096, NULL, 5, pv_get_new_key_from_server);
+     }
+     else
+     {
+          run_websocket = true;
      }
 
      xTaskCreate(handle_task_update_key, "task_update_key", 4096, NULL, 5, NULL);
