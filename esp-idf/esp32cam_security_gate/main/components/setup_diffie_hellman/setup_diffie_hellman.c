@@ -73,16 +73,19 @@ void generateKey()
           }
 
           // Calculate AKey = gKey^aKey % pKey
-          if ((ret = mbedtls_mpi_exp_mod(&AKey_mpi, &gKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != 0)
+          if ((ret = mbedtls_mpi_exp_mod(&AKey_mpi, &gKey_mpi, &aKey_mpi, &pKey_mpi, NULL)) != ESP_OK)
           {
                ESP_LOGE(TAG_DIFFIE_HELLMAN, "Failed to calculate exp mod: %d", ret);
                goto cleanup_generate_key;
           }
-          if ((ret = mbedtls_mpi_write_binary(&AKey_mpi, (unsigned char *)&keys->AKey, sizeof(keys->AKey))) != 0)
+          char output[30];
+          uint64_t olen;
+          if ((ret = mbedtls_mpi_write_string(&AKey_mpi, 10, output, sizeof(output), &olen)) != ESP_OK)
           {
                ESP_LOGE(TAG_DIFFIE_HELLMAN, "Failed to write AKey to binary: %d", ret);
                goto cleanup_generate_key;
           }
+          keys->AKey = atoi(output);
 
      cleanup_generate_key:
           mbedtls_mpi_free(&pKey_mpi);
@@ -157,7 +160,9 @@ void handle_http_event_new_key(esp_http_client_event_t *evt)
           // Save x-api-key value to variable
           if (strcmp(api_header_key, HEADER_API_KEY) == 0)
           {
-               apiKey = evt->header_value;
+               apiKey = heap_caps_realloc(apiKey, strlen(evt->header_value) + 1, MALLOC_CAP_SPIRAM);
+               sprintf(apiKey, "%s", evt->header_value);
+               ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey: %s", apiKey);
           }
 
           break;
@@ -184,26 +189,41 @@ void handle_http_event_new_key(esp_http_client_event_t *evt)
 esp_err_t load_key_from_nvs()
 {
      // Load NVS
-     esp_err_t ret = nvs_open("storage", NVS_READONLY, &my_nvs_handle);
+     size_t required_size_api_key;
+     esp_err_t ret = nvs_flash_init();
 
-     if (ret == ESP_OK)
+     if ((ret = nvs_open("storage", NVS_READWRITE, &my_nvs_handle)) != ESP_OK)
      {
-          size_t required_size_api_key;
-          ret = nvs_get_str(my_nvs_handle, "apiKey", NULL, &required_size_api_key);
-          if (ret != ESP_OK)
-               goto load_key_fail;
-
-          apiKey = malloc(required_size_api_key);
-
-          ret = nvs_get_str(my_nvs_handle, "apiKey", apiKey, &required_size_api_key);
-          if (ret != ESP_OK)
-               goto load_key_fail;
-
-          ret = nvs_get_u64(my_nvs_handle, "secretKey", &keys->SKey);
-
-     load_key_fail:
-          nvs_close(my_nvs_handle);
+          ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error (%s) opening NVS handle", esp_err_to_name(ret));
+          return ret;
      }
+
+     if ((ret = nvs_get_str(my_nvs_handle, "apiKey", NULL, &required_size_api_key)) != ESP_OK)
+     {
+          ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error get size of apiKey: %s", esp_err_to_name(ret));
+          goto load_key_fail;
+     }
+
+     apiKey = malloc(required_size_api_key);
+
+     if ((ret = nvs_get_str(my_nvs_handle, "apiKey", apiKey, &required_size_api_key)) != ESP_OK)
+     {
+          ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error get content of apiKey: %s", esp_err_to_name(ret));
+          goto load_key_fail;
+     }
+
+     ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey in nvs: %s", apiKey);
+
+     uint64_t secretKey;
+     if ((ret = nvs_get_u64(my_nvs_handle, "secretKey", &secretKey)) != ESP_OK)
+     {
+          ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error get content of secretKey: %s", esp_err_to_name(ret));
+          goto load_key_fail;
+     }
+     ESP_LOGI(TAG_DIFFIE_HELLMAN, "secretKey in nvs: %llu", secretKey);
+
+load_key_fail:
+     nvs_close(my_nvs_handle);
 
      return ret;
 }
@@ -229,7 +249,7 @@ bool is_api_valid()
      do
      {
           client = esp_http_client_init(&config);
-          esp_http_client_set_header(client, HEADER_API_KEY, "myapikey");
+          esp_http_client_set_header(client, HEADER_API_KEY, apiKey);
           esp_http_client_set_header(client, "User-Agent", "ESP32-CAM-SECURITY-GATE");
           ret = esp_http_client_perform(client);
 
@@ -281,6 +301,7 @@ void get_new_key_from_server()
      {
           esp_http_client_handle_t client = esp_http_client_init(&config);
           uint64_t aKey = keys->aKey;
+          ESP_LOGI(TAG_DIFFIE_HELLMAN, "json: %s", to_json(keys));
 
           // Remove SKey and aKey before Sending
           keys->aKey = 0;
@@ -330,20 +351,24 @@ void get_new_key_from_server()
                }
 
                // Convert SKey to int
-               if ((ret = mbedtls_mpi_write_binary(&SKey_mpi, (unsigned char *)&keys->SKey, sizeof(keys->SKey))) != 0)
+               char output[30];
+               uint64_t olen;
+               if ((ret = mbedtls_mpi_write_string(&SKey_mpi, 10, output, sizeof(output), &olen)) != ESP_OK)
                {
                     ESP_LOGE(TAG_DIFFIE_HELLMAN, "Failed to write SKey to binary: %d", ret);
                     goto cleanup_get_new_key;
                }
+               keys->SKey = atoi(output);
 
                // Save key to NVS
                nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
                nvs_set_str(my_nvs_handle, "apiKey", apiKey);
-               nvs_set_i64(my_nvs_handle, "secretKey", keys->SKey);
+               nvs_set_u64(my_nvs_handle, "secretKey", keys->SKey);
                nvs_commit(my_nvs_handle);
                nvs_close(my_nvs_handle);
 
                ESP_LOGI(TAG_DIFFIE_HELLMAN, "New SKey : %llu", keys->SKey);
+               ESP_LOGI(TAG_DIFFIE_HELLMAN, "New ApiKey: %s", apiKey);
 
           cleanup_get_new_key:
                mbedtls_mpi_free(&BKey_mpi);
