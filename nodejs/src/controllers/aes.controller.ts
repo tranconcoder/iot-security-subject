@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 // Validate
 import { v4 } from 'uuid';
+import { createHash } from 'crypto';
 import bigInt from 'big-integer';
 import AESModel from '../config/database/schema/AES.schema';
 
@@ -14,7 +15,6 @@ export default class AESController {
 
 		const bKey = bigInt.randBetween(1, pKey.prev());
 		const BKey = gKey.modPow(bKey, pKey);
-
 		const SKey = AKey.modPow(bKey, pKey);
 
 		if (isNaN(SKey)) {
@@ -22,12 +22,10 @@ export default class AESController {
 			return;
 		}
 
+		const SKeyArr = createHash('sha256').update(SKey.toString()).digest();
 		const apiKey = v4();
-		const AES = new AESModel({ SKey, APIKEY: apiKey });
+		const AES = new AESModel({ secretKey: SKeyArr, apiKey });
 
-		res.setHeader('X-API-KEY', apiKey);
-		console.log(apiKey);
-		res.status(200).send(BKey.toString());
 		AES.save().then(() => {
 			console.log('Save AES');
 		});
@@ -39,7 +37,11 @@ export default class AESController {
 			AKey: AKey.toString(),
 			pKey: pKey.toString(),
 			gKey: gKey.toString(),
+			apiKey,
 		});
+
+		res.setHeader('X-API-KEY', apiKey);
+		res.status(200).send(BKey.toString());
 	}
 
 	public static async checkApiKey(
@@ -48,9 +50,7 @@ export default class AESController {
 		next: NextFunction
 	) {
 		const apiKey = req.header('x-api-key');
-		const apiKeyValid = await AESModel.findOne({ APIKEY: apiKey }).lean();
-
-		console.log(apiKey);
+		const apiKeyValid = await AESModel.findOne({ apiKey }).lean();
 
 		if (!apiKeyValid) res.status(400).json({ message: 'Invalid API key' });
 		else res.status(200).send('OK');

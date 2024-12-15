@@ -1,5 +1,4 @@
 #include "esp32cam_security_gate.h"
-#include "esp_http_client.h"
 
 // TASK STACK SIZE
 #define STACK_SIZE 4 * 1024

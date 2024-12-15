@@ -4,19 +4,13 @@ const uint16_t MAX_HTTP_OUTPUT_BUFFER = 2048;
 const char *TAG_DIFFIE_HELLMAN = "setup_diffie_hellman";
 const char *HEADER_API_KEY = "X-API-KEY";
 
-typedef struct
-{
-     uint64_t aKey;
-     uint64_t pKey;
-     uint64_t gKey;
-     uint64_t AKey;
-     uint64_t BKey;
-     uint64_t SKey;
-} key_struct;
-
 key_struct *keys = NULL;
 nvs_handle_t my_nvs_handle;
-
+char *apiKey;
+uint64_t *secretKey;
+bool run_websocket = false;
+TaskHandle_t *pv_update_key = NULL;
+TaskHandle_t *pv_get_new_key_from_server = NULL;
 char *to_json(key_struct *keys)
 {
      if (keys == NULL)
@@ -35,7 +29,7 @@ char *to_json(key_struct *keys)
      cJSON_AddNumberToObject(json, "gKey", keys->gKey);
      cJSON_AddNumberToObject(json, "AKey", keys->AKey);
      cJSON_AddNumberToObject(json, "BKey", keys->BKey);
-     cJSON_AddNumberToObject(json, "SKey", keys->SKey);
+     cJSON_AddNumberToObject(json, "SKey", *(keys->SKey));
 
      char *json_str = cJSON_PrintUnformatted(json);
      cJSON_Delete(json);
@@ -43,13 +37,10 @@ char *to_json(key_struct *keys)
      return json_str;
 }
 
-char *apiKey;
-
 // Generate default key in client side
 void generateKey()
 {
      int ret = 1;
-     keys = malloc(sizeof(key_struct));
      mbedtls_mpi pKey_mpi, gKey_mpi, aKey_mpi, AKey_mpi;
 
      while (ret)
@@ -214,13 +205,12 @@ esp_err_t load_key_from_nvs()
 
      ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey in nvs: %s", apiKey);
 
-     uint64_t secretKey;
-     if ((ret = nvs_get_u64(my_nvs_handle, "secretKey", &secretKey)) != ESP_OK)
+     if ((ret = nvs_get_u64(my_nvs_handle, "secretKey", *(keys->SKey))) != ESP_OK)
      {
           ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error get content of secretKey: %s", esp_err_to_name(ret));
           goto load_key_fail;
      }
-     ESP_LOGI(TAG_DIFFIE_HELLMAN, "secretKey in nvs: %llu", secretKey);
+     ESP_LOGI(TAG_DIFFIE_HELLMAN, "secretKey in nvs: %llu", *(keys->SKey));
 
 load_key_fail:
      nvs_close(my_nvs_handle);
@@ -301,11 +291,10 @@ void get_new_key_from_server()
      {
           esp_http_client_handle_t client = esp_http_client_init(&config);
           uint64_t aKey = keys->aKey;
-          ESP_LOGI(TAG_DIFFIE_HELLMAN, "json: %s", to_json(keys));
 
           // Remove SKey and aKey before Sending
           keys->aKey = 0;
-          keys->SKey = 0;
+          *(keys->SKey) = 0;
 
           char *payload = to_json(keys);
           size_t payload_len = strlen(payload);
@@ -358,7 +347,7 @@ void get_new_key_from_server()
                     ESP_LOGE(TAG_DIFFIE_HELLMAN, "Failed to write SKey to binary: %d", ret);
                     goto cleanup_get_new_key;
                }
-               keys->SKey = atoi(output);
+               *keys->SKey = atoi(output);
 
                // Save key to NVS
                nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
@@ -367,7 +356,7 @@ void get_new_key_from_server()
                nvs_commit(my_nvs_handle);
                nvs_close(my_nvs_handle);
 
-               ESP_LOGI(TAG_DIFFIE_HELLMAN, "New SKey : %llu", keys->SKey);
+               ESP_LOGI(TAG_DIFFIE_HELLMAN, "New SKey : %llu", *keys->SKey);
                ESP_LOGI(TAG_DIFFIE_HELLMAN, "New ApiKey: %s", apiKey);
 
           cleanup_get_new_key:
@@ -388,7 +377,9 @@ void get_new_key_from_server()
           esp_http_client_cleanup(client);
      } while (ret != ESP_OK || (maxRetry--) > 0);
 
-     vTaskDelete(NULL);
+     run_websocket = true;
+     if (pv_get_new_key_from_server != NULL)
+          vTaskDelete(pv_get_new_key_from_server);
 }
 
 // Function to handle update secretKey and apiKey interval 10 minutes
@@ -396,27 +387,19 @@ void handle_task_update_key()
 {
      while (true)
      {
-          // Update key every 10 minutes
-          vTaskDelay(pdMS_TO_TICKS(600000));
+          vTaskDelay(pdMS_TO_TICKS(10000));
+          ESP_LOGE(TAG_DIFFIE_HELLMAN, "Updating key...");
 
           generateKey();
           get_new_key_from_server();
      }
 }
 
-uint64_t getSecretKey()
-{
-     return keys->SKey;
-}
-
-uint64_t getApiKey()
-{
-     return apiKey;
-}
-
 void setup_diffie_hellman()
 {
      // Load key from NVS
+     keys = malloc(sizeof(key_struct));
+     keys->SKey = malloc(sizeof(uint64_t));
      esp_err_t ret = load_key_from_nvs();
 
      // Found apiKey ==> check if it's valid
@@ -432,8 +415,15 @@ void setup_diffie_hellman()
      if (ret != ESP_OK || !apiKeyValid)
      {
           ESP_LOGI(TAG_DIFFIE_HELLMAN, "Key not found or invalid, getting new apiKey...");
-          xTaskCreate(get_new_key_from_server, "get_new_key_from_server", 4096, NULL, 5, NULL);
+          xTaskCreate(get_new_key_from_server, "get_new_key_from_server", 4096, NULL, 5, pv_get_new_key_from_server);
      }
 
      xTaskCreate(handle_task_update_key, "task_update_key", 4096, NULL, 5, NULL);
+
+     while (!run_websocket)
+     {
+          vTaskDelay(pdMS_TO_TICKS(100));
+     }
+     ESP_LOGI(TAG_DIFFIE_HELLMAN, "Complete init AES Key, starting websocket client...");
+     setup_esp_websocket_client_init(apiKey, keys->SKey);
 }

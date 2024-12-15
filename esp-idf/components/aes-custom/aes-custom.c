@@ -1,5 +1,24 @@
 #include "aes-custom.h"
 
+size_t convert_hex(uint8_t *dest, size_t count, const char *src)
+{
+     char buf[3];
+     size_t i;
+     for (i = 0; i < count && *src; i++)
+     {
+          buf[0] = *src++;
+          buf[1] = '\0';
+          if (*src)
+          {
+               buf[1] = *src++;
+               buf[2] = '\0';
+          }
+          if (sscanf(buf, "%hhx", &dest[i]) != 1)
+               break;
+     }
+     return i;
+}
+
 void encrypt_string(const char *input, uint8_t *key, uint8_t *iv)
 {
      unsigned char output[16]; // char array store output

@@ -9,17 +9,16 @@
 
 #define STACK_SIZE 8 * 1024 // Increased from 4K to 8K
 
+typedef struct
+{
+     char *apiKey;
+     uint64_t *secretKey;
+     esp_websocket_client_handle_t ws_client;
+} params_struct;
+
 const char *TAG = "websocket_client";
 
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
-esp_websocket_client_config_t ws_cfg = {
-    .uri = "ws://192.168.1.210:3000/?source=esp32cam_security_gate_send_img",
-    .buffer_size = 16 * 1024,
-    .reconnect_timeout_ms = 500,
-    .network_timeout_ms = 5000,
-};
-
-esp_websocket_client_handle_t ws_client = NULL;
 
 void ws_connected_cb()
 {
@@ -43,12 +42,15 @@ void ws_error_cb()
      ESP_LOGE(TAG, "WebSocket client error");
 }
 
-void task_send_image_to_websocket()
+void task_send_image_to_websocket(params_struct *params)
 {
      uint64_t last_send_time = esp_timer_get_time();
 
      while (true)
      {
+          ESP_LOGI(TAG, "api key: %s", params->apiKey);
+          ESP_LOGI(TAG, "secret key: %llu", *(params->secretKey));
+
           camera_fb_t *fb = esp_camera_fb_get();
           if (!fb)
           {
@@ -67,7 +69,7 @@ void task_send_image_to_websocket()
                continue;
           }
 
-          int send_result = esp_websocket_client_send_bin(ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
+          int send_result = esp_websocket_client_send_bin(params->ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
 
           // Free allocated memory
           free(enc_input);
@@ -88,19 +90,35 @@ void task_send_image_to_websocket()
           }
 
           // Add small delay to prevent tight loop
-          vTaskDelay(10 / portTICK_PERIOD_MS);
+          // vTaskDelay(100 / portTICK_PERIOD_MS);
      }
 }
 
-void setup_esp_websocket_client_init(int *g_sockfd)
+void setup_esp_websocket_client_init(char *apiKey, uint64_t *secretKey)
 {
-     ws_client = esp_websocket_client_init(&ws_cfg);
+     char *uri = heap_caps_malloc(200, MALLOC_CAP_SPIRAM);
+     sprintf(uri,
+             "ws://%s:%d/?source=%s",
+             CONFIG_WEBSERVER_IP,
+             CONFIG_WEBSERVER_PORT,
+             "esp32cam_security_gate_send_img");
+     esp_websocket_client_config_t ws_cfg = {
+         .uri = uri,
+         .buffer_size = 16 * 1024,
+         .reconnect_timeout_ms = 500,
+         .network_timeout_ms = 5000,
+     };
+     esp_websocket_client_handle_t ws_client = esp_websocket_client_init(&ws_cfg);
+     params_struct *params = heap_caps_malloc(sizeof(params_struct), MALLOC_CAP_SPIRAM);
+     params->apiKey = apiKey;
+     params->secretKey = secretKey;
+     params->ws_client = ws_client;
 
      xTaskCreate(
          task_send_image_to_websocket,
          "send_image_to_websocket",
          STACK_SIZE,
-         ws_client,
+         params,
          tskIDLE_PRIORITY + 1, // Lower priority than configMAX_PRIORITIES - 1
          &pv_task_send_image_to_websocket);
      vTaskSuspend(pv_task_send_image_to_websocket);
