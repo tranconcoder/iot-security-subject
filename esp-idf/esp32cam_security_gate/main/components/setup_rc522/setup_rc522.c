@@ -1,74 +1,57 @@
-#include "setup_rc522.h"
+#include <esp_log.h>
+#include "rc522.h"
+#include "driver/rc522_spi.h"
+#include "rc522_picc.h"
 
+static const char *TAG = "rc522-basic-example";
+
+#define RC522_SPI_BUS_GPIO_MISO (15)
+#define RC522_SPI_BUS_GPIO_MOSI (16)
+#define RC522_SPI_BUS_GPIO_SCLK (17)
+#define RC522_SPI_SCANNER_GPIO_SDA (18)
+#define RC522_SCANNER_GPIO_RST (-1) // soft-reset
+
+static rc522_spi_config_t driver_config = {
+    .host_id = SPI3_HOST,
+    .bus_config = &(spi_bus_config_t){
+        .miso_io_num = RC522_SPI_BUS_GPIO_MISO,
+        .mosi_io_num = RC522_SPI_BUS_GPIO_MOSI,
+        .sclk_io_num = RC522_SPI_BUS_GPIO_SCLK,
+    },
+    .dev_config = {
+        .spics_io_num = RC522_SPI_SCANNER_GPIO_SDA,
+    },
+    .rst_io_num = RC522_SCANNER_GPIO_RST,
+};
+
+static rc522_driver_handle_t driver;
 static rc522_handle_t scanner;
-static const char *SETUP_RC522_TAG = "setup_rc522";
 
-static void rc522_handler(void (*on_tag_scanned)(uint64_t serial_number), esp_event_base_t base, int32_t event_id, void *event_data)
+static void on_picc_state_changed(void *arg, esp_event_base_t base, int32_t event_id, void *data)
 {
-    rc522_event_data_t *data = (rc522_event_data_t *)event_data;
+    rc522_picc_state_changed_event_t *event = (rc522_picc_state_changed_event_t *)data;
+    rc522_picc_t *picc = event->picc;
 
-    switch (event_id)
+    if (picc->state == RC522_PICC_STATE_ACTIVE)
     {
-    case RC522_EVENT_TAG_SCANNED:
+        rc522_picc_print(picc);
+    }
+    else if (picc->state == RC522_PICC_STATE_IDLE && event->old_state >= RC522_PICC_STATE_ACTIVE)
     {
-        rc522_tag_t *tag = (rc522_tag_t *)data->ptr;
-        uint64_t serial_number = tag->serial_number;
-        on_tag_scanned(serial_number);
-        break;
+        ESP_LOGI(TAG, "Card has been removed");
     }
-    default:
-    {
-        ESP_LOGI(SETUP_RC522_TAG, "Unknown tag event rc522!");
-    }
-    }
-}
-
-void on_tag_scanned(uint64_t serial_number)
-{
-    camera_fb_t *fb = esp_camera_fb_get();
-
-    if (!fb)
-        return;
-
-    char http_path[55];
-    sprintf(http_path, "/api/security-gate/auth-door/?s=%022llu", serial_number);
-    ESP_LOGI(SETUP_RC522_TAG, "TAG SCANNED: %llu", serial_number);
-    esp_http_client_config_t http_webserver_config = {
-        .host = CONFIG_WEBSERVER_IP,
-        .port = CONFIG_WEBSERVER_PORT,
-        .path = http_path,
-        .event_handler = _http_event_handle,
-    };
-    esp_http_client_handle_t client = esp_http_client_init(&http_webserver_config);
-    // Convert buffer to base64
-    size_t outlen;
-    unsigned char *base64 = heap_caps_malloc(50000, MALLOC_CAP_SPIRAM);
-
-    mbedtls_base64_encode(base64, 50000, &outlen, (unsigned char *)fb->buf, fb->len);
-    esp_camera_fb_return(fb);
-    // ESP_LOGI(SETUP_RC522_TAG, "%d %s", outlen, base64);
-    // ESP_LOGI(SETUP_RC522_TAG, "%d", outlen);
-
-    esp_http_client_set_method(client, HTTP_METHOD_POST);
-    esp_http_client_set_header(client, "Content-Type", "text/plain");
-    esp_http_client_set_post_field(client, (const char *)base64, outlen);
-
-    esp_http_client_perform(client);
-    esp_http_client_cleanup(client);
-    heap_caps_free(base64);
 }
 
 void setup_rc522()
 {
-    rc522_config_t rc522_config = {
-        .spi.host = SPI3_HOST,
-        .spi.miso_gpio = 15,
-        .spi.mosi_gpio = 16,
-        .spi.sck_gpio = 17,
-        .spi.sda_gpio = 18,
+    rc522_spi_create(&driver_config, &driver);
+    rc522_driver_install(driver);
+
+    rc522_config_t scanner_config = {
+        .driver = driver,
     };
 
-    rc522_create(&rc522_config, &scanner);
-    rc522_register_events(scanner, RC522_EVENT_ANY, rc522_handler, on_tag_scanned);
+    rc522_create(&scanner_config, &scanner);
+    rc522_register_events(scanner, RC522_EVENT_PICC_STATE_CHANGED, on_picc_state_changed, NULL);
     rc522_start(scanner);
 }

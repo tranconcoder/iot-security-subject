@@ -7,7 +7,9 @@ import { RequestError } from '../config/handleError.config';
 
 export default class SecurityGateController {
 	public async authDoor(req: Request, res: Response, next: NextFunction) {
-		const rfidSerialNumber = await authDoorSchema.validateAsync(req.body);
+		const rfidSerialNumber = await authDoorSchema.validateAsync(
+			Number(req.query.s)
+		);
 
 		SecurityGateServices.authDoor(rfidSerialNumber).catch(() => {
 			throw new RequestError(400, 'Server error!');

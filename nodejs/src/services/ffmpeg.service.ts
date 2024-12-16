@@ -33,7 +33,7 @@ import {
 // Initial ffmpeg service
 //
 export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
-	.setFfmpegPath(FFMPEG_PATH)
+	// .setFfmpegPath(FFMPEG_PATH)
 	.input(readStreamEsp32CamSecurityGateImg)
 	.inputOptions(['-re'])
 	.withNativeFramerate()
@@ -70,7 +70,7 @@ export const ffmpegCommandSecurityGate = Ffmpeg({ priority: 0 })
 // );
 
 export const ffmpegCommandMonitor = Ffmpeg({ priority: 1 })
-	.setFfmpegPath(FFMPEG_PATH)
+	// .setFfmpegPath(FFMPEG_PATH)
 	.input(readStreamEsp32CamMonitorImg)
 	.inputOptions(['-re'])
 	.withNativeFramerate()
@@ -101,5 +101,5 @@ export const ffmpegCommandMonitor = Ffmpeg({ priority: 1 })
 
 export const run = () => {
 	ffmpegCommandSecurityGate.run();
-	ffmpegCommandMonitor.run();
+	// ffmpegCommandMonitor.run();
 };

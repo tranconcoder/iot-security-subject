@@ -28,12 +28,6 @@ dependencies:
       path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32cam_security_gate/main/components/config_http_client
       type: local
     version: '*'
-  esp-idf-rc522:
-    dependencies: []
-    source:
-      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/esp-idf-rc522
-      type: local
-    version: 2.6.0
   esp-websocket_client:
     dependencies:
     - name: idf
@@ -224,7 +218,6 @@ direct_dependencies:
 - aes-custom
 - common_struct
 - config_http_client
-- esp-idf-rc522
 - esp-websocket_client
 - espressif/esp32-camera
 - espressif/esp_modem_usb_dte
@@ -237,6 +230,6 @@ direct_dependencies:
 - setup_esp32_cam
 - setup_esp_websocket_client
 - setup_rc522
-manifest_hash: ca41d9627418433cc07264a1c865fabd99d8795670dd03b207724a01c08c161f
+manifest_hash: 824762edf66269c3f1426f6121bc897da3f4e37ef46411a4d7a90ecca47185f1
 target: esp32s3
 version: 2.0.0

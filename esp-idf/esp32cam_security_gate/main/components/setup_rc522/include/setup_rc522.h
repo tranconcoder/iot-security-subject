@@ -1,5 +1,4 @@
 #include "setup_esp32_cam.h"
-#include "esp_camera.h"
 #include "rc522.h"
 #include <esp_log.h>
 #include <inttypes.h>

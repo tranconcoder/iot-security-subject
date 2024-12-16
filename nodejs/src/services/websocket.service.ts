@@ -18,7 +18,7 @@ import aes from 'js-crypto-aes';
 const websocketAnalytics = new WebsocketAnalytics(0, 0, 10_000);
 websocketAnalytics.startAnalytics();
 
-const iv = '1234567890123456';
+const iv = '1231231231231231';
 
 export default function runWebsocketService(
 	wss: WebSocketServer,
@@ -63,7 +63,8 @@ export default function runWebsocketService(
 								iv: Uint8Array.from(Buffer.from(iv, 'ascii')),
 							})
 							.then((decrypted) => {
-								console.log(decrypted);
+								websocketAnalytics.transferData(decrypted.length, 1);
+								readStreamEsp32CamSecurityGateImg.push(decrypted);
 							});
 					});
 					break;

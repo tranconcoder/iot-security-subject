@@ -114,6 +114,7 @@ static esp_err_t esp_storage_init(void)
 
 void app_main()
 {
+    setup_rc522();
     esp_log_level_set("*", ESP_LOG_INFO);
 
     esp_storage_init();
@@ -137,6 +138,4 @@ void app_main()
     s->set_sharpness(s, 200);
 
     setup_diffie_hellman();
-    // setup_esp_websocket_client_init();
-    // setup_rc522();
 }

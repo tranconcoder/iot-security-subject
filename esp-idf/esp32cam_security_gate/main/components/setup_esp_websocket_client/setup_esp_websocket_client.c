@@ -67,7 +67,7 @@ void task_send_image_to_websocket(params_struct *params)
           if (aes_encrypt_custom((const unsigned char *)fb->buf, fb->len, (const unsigned char *)encrypted_data, hmacResult) == 0)
           {
                printf("encrypted data: %d", enc_len);
-               for (int i = enc_len - 100; i < enc_len; i++)
+               for (int i = enc_len - 20; i < enc_len; i++)
                {
                     printf("%02x ", encrypted_data[i]);
                }

@@ -13,8 +13,8 @@ dependencies:
     path: './components/setup_esp_websocket_client'
   config_http_client:
     path: ./components/config_http_client
-  esp-idf-rc522:
-    path: ../../components/esp-idf-rc522
+  # esp-idf-rc522:
+  # path: ../../components/esp-idf-rc522
   common_struct:
     path: ../../components/common_struct
   aes-custom:
