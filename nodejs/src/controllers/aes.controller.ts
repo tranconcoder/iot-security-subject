@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 // Validate
 import { v4 } from 'uuid';
-import { createHash } from 'crypto';
+import { createHmac } from 'crypto';
 import bigInt from 'big-integer';
 import AESModel from '../config/database/schema/AES.schema';
 
@@ -22,9 +22,13 @@ export default class AESController {
 			return;
 		}
 
-		const SKeyArr = createHash('sha256').update(SKey.toString()).digest();
 		const apiKey = v4();
+		const secretKey = 'example-secret-key';
+		const SKeyArr: Buffer = createHmac('sha256', secretKey)
+			.update(SKey.toString())
+			.digest();
 		const AES = new AESModel({ secretKey: SKeyArr, apiKey });
+		console.log(SKeyArr);
 
 		AES.save().then(() => {
 			console.log('Save AES');
@@ -44,11 +48,7 @@ export default class AESController {
 		res.status(200).send(BKey.toString());
 	}
 
-	public static async checkApiKey(
-		req: Request,
-		res: Response,
-		next: NextFunction
-	) {
+	public static async checkApiKey(req: Request, res: Response) {
 		const apiKey = req.header('x-api-key');
 		const apiKeyValid = await AESModel.findOne({ apiKey }).lean();
 

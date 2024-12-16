@@ -1,7 +1,8 @@
 #include "setup_esp_websocket_client.h"
 #include "mbedtls/bignum.h" // Add this line to include the mbedtls_mpi type
-#include "nvs_flash.h"      // Add this line to include NVS functions
-#include "nvs.h"            // Add this line to include NVS functions
+#include "mbedtls/md.h"
+#include "nvs_flash.h" // Add this line to include NVS functions
+#include "nvs.h"       // Add this line to include NVS functions
 #include <string.h>
 #include <stdlib.h>
 #include "esp_log.h"
@@ -17,6 +18,7 @@ typedef struct
 } params_struct;
 
 const char *TAG = "websocket_client";
+uint8_t hmacResult[32];
 
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
 
@@ -61,6 +63,8 @@ void task_send_image_to_websocket(params_struct *params)
 
           // Ensure memory allocation
           char *enc_input = heap_caps_malloc(fb->len, MALLOC_CAP_SPIRAM);
+          char iv[16] = "1234567890123456";
+
           if (!enc_input)
           {
                ESP_LOGE(TAG, "Failed to allocate memory for encryption");
@@ -69,6 +73,7 @@ void task_send_image_to_websocket(params_struct *params)
                continue;
           }
 
+          encrypt_any_length_string((const char *)fb->buf, &hmacResult, (uint8_t *)iv);
           int send_result = esp_websocket_client_send_bin(params->ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
 
           // Free allocated memory
@@ -102,6 +107,7 @@ void setup_esp_websocket_client_init(char *apiKey, uint64_t *secretKey)
              CONFIG_WEBSERVER_IP,
              CONFIG_WEBSERVER_PORT,
              "esp32cam_security_gate_send_img");
+
      esp_websocket_client_config_t ws_cfg = {
          .uri = uri,
          .buffer_size = 16 * 1024,
@@ -110,9 +116,37 @@ void setup_esp_websocket_client_init(char *apiKey, uint64_t *secretKey)
      };
      esp_websocket_client_handle_t ws_client = esp_websocket_client_init(&ws_cfg);
      params_struct *params = heap_caps_malloc(sizeof(params_struct), MALLOC_CAP_SPIRAM);
+
+     mbedtls_md_context_t ctx;
+     mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
+
+     char *shaKey = "example-secret-key";
+     char *secretKeyChar = malloc(30);
+
+     sprintf(secretKeyChar, "%llu", *secretKey);
+
+     const size_t payloadLength = strlen(secretKeyChar);
+     const size_t keyLength = strlen(shaKey);
+
+     ESP_LOGE(TAG, "Secret key: %s(%d)", secretKeyChar, payloadLength);
+
+     mbedtls_md_init(&ctx);
+     mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(md_type), 1);
+     mbedtls_md_hmac_starts(&ctx, (const unsigned char *)shaKey, keyLength);
+     mbedtls_md_hmac_update(&ctx, (const unsigned char *)secretKeyChar, payloadLength);
+     mbedtls_md_hmac_finish(&ctx, hmacResult);
+     mbedtls_md_free(&ctx);
+
+     for (int i = 0; i < sizeof(hmacResult); i++)
+     {
+          printf("Byte %d: %02x \n", i + 1, (int)hmacResult[i]);
+     }
+
      params->apiKey = apiKey;
      params->secretKey = secretKey;
      params->ws_client = ws_client;
+
+     esp_websocket_client_append_header(ws_client, "X-API-KEY", apiKey);
 
      xTaskCreate(
          task_send_image_to_websocket,

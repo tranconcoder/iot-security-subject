@@ -202,7 +202,7 @@ esp_err_t load_key_from_nvs()
 
      ESP_LOGI(TAG_DIFFIE_HELLMAN, "apiKey in nvs: %s", apiKey);
 
-     if ((ret = nvs_get_u64(my_nvs_handle, "secretKey", *(keys->SKey))) != ESP_OK)
+     if ((ret = nvs_get_u64(my_nvs_handle, "secretKey", keys->SKey)) != ESP_OK)
      {
           ESP_LOGE(TAG_DIFFIE_HELLMAN, "Error get content of secretKey: %s", esp_err_to_name(ret));
           goto load_key_fail;
@@ -349,7 +349,7 @@ void get_new_key_from_server()
                // Save key to NVS
                nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
                nvs_set_str(my_nvs_handle, "apiKey", apiKey);
-               nvs_set_u64(my_nvs_handle, "secretKey", keys->SKey);
+               nvs_set_u64(my_nvs_handle, "secretKey", *(keys->SKey));
                nvs_commit(my_nvs_handle);
                nvs_close(my_nvs_handle);
 
@@ -375,8 +375,6 @@ void get_new_key_from_server()
      } while (ret != ESP_OK || (maxRetry--) > 0);
 
      run_websocket = true;
-     if (pv_get_new_key_from_server != NULL)
-          vTaskDelete(pv_get_new_key_from_server);
 }
 
 // Function to handle update secretKey and apiKey interval 10 minutes
@@ -388,7 +386,7 @@ void handle_task_update_key()
           ESP_LOGE(TAG_DIFFIE_HELLMAN, "Updating key...");
 
           generateKey();
-          get_new_key_from_server();
+          get_new_key_from_server(true);
      }
 }
 
@@ -413,19 +411,18 @@ void setup_diffie_hellman()
      if (ret != ESP_OK || !apiKeyValid)
      {
           ESP_LOGI(TAG_DIFFIE_HELLMAN, "Key not found or invalid, getting new apiKey...");
-          xTaskCreate(get_new_key_from_server, "get_new_key_from_server", 4096, NULL, 5, pv_get_new_key_from_server);
+          get_new_key_from_server();
      }
      else
      {
           run_websocket = true;
      }
 
-     xTaskCreate(handle_task_update_key, "task_update_key", 4096, NULL, 5, NULL);
-
      while (!run_websocket)
      {
           vTaskDelay(pdMS_TO_TICKS(100));
      }
+     xTaskCreate(handle_task_update_key, "task_update_key", 4096, NULL, 5, NULL);
      ESP_LOGI(TAG_DIFFIE_HELLMAN, "Complete init AES Key, starting websocket client...");
      setup_esp_websocket_client_init(apiKey, keys->SKey);
 }
