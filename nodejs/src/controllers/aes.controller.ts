@@ -27,8 +27,7 @@ export default class AESController {
 		const SKeyArr: Buffer = createHmac('sha256', secretKey)
 			.update(SKey.toString())
 			.digest();
-		const AES = new AESModel({ secretKey: SKeyArr, apiKey });
-		console.log(SKeyArr);
+		const AES = new AESModel({ secretKey: Array.from(SKeyArr), apiKey });
 
 		AES.save().then(() => {
 			console.log('Save AES');

@@ -12,6 +12,7 @@
 		"esp_netif.h": "c",
 		"setup_diffie_hellman.h": "c",
 		"*.inc": "cpp",
-		"bignum.h": "c"
+		"bignum.h": "c",
+		"aes-custom.h": "c"
 	}
 }

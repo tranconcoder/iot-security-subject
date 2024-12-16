@@ -383,7 +383,7 @@ void handle_task_update_key()
      while (true)
      {
           vTaskDelay(pdMS_TO_TICKS(10000));
-          ESP_LOGE(TAG_DIFFIE_HELLMAN, "Updating key...");
+          ESP_LOGI(TAG_DIFFIE_HELLMAN, "Updating key...");
 
           generateKey();
           get_new_key_from_server(true);

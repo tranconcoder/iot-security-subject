@@ -3,7 +3,6 @@ import type { WebSocketCustom } from '../types/ws';
 
 // Websocket
 import url from 'url';
-import { v4 as uuidv4 } from 'uuid';
 import { WebSocketServer } from 'ws';
 import { WebSocketSourceEnum } from '../enums/ws.enum';
 // Analytics
@@ -14,9 +13,12 @@ import {
 	readStreamEsp32CamSecurityGateImg,
 } from './stream.service';
 import AESModel from '../config/database/schema/AES.schema';
+import aes from 'js-crypto-aes';
 
 const websocketAnalytics = new WebsocketAnalytics(0, 0, 10_000);
 websocketAnalytics.startAnalytics();
+
+const iv = '1234567890123456';
 
 export default function runWebsocketService(
 	wss: WebSocketServer,
@@ -55,8 +57,14 @@ export default function runWebsocketService(
 				case WebSocketSourceEnum.ESP32CAM_SECURITY_GATE_SEND_IMG:
 					// Handle append video frames to stream
 					ws.on('message', async function message(buffer: Buffer) {
-						websocketAnalytics.transferData(buffer.byteLength, 1);
-						readStreamEsp32CamSecurityGateImg.push(buffer);
+						aes
+							.decrypt(buffer, Buffer.from(keys.secretKey), {
+								name: 'AES-CBC',
+								iv: Uint8Array.from(Buffer.from(iv, 'ascii')),
+							})
+							.then((decrypted) => {
+								console.log(decrypted);
+							});
 					});
 					break;
 

@@ -2963,6 +2963,18 @@ joi@*, joi@^17.13.3:
     "@sideway/formula" "^3.0.1"
     "@sideway/pinpoint" "^2.0.0"
 
+js-crypto-aes@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/js-crypto-aes/-/js-crypto-aes-1.0.6.tgz#8445a4ebb8bb6670bb10f54b29c2f22991944b7d"
+  integrity sha512-E2hu9z5+YtpDg9Un/bDfmH+I5dv/8aN+ozxv9L0ybZldcQ9T5iYDbBKdlKGBUKI3IvzoWSBSdnZnhwZaRIN46w==
+  dependencies:
+    js-crypto-env "^1.0.5"
+
+js-crypto-env@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/js-crypto-env/-/js-crypto-env-1.0.5.tgz#aed3ba39ea6641b8052d47842bf8e48502c4eb63"
+  integrity sha512-8/UNN3sG8J+yMzqwSNVaobaWhIz4MqZFoOg5OB0DFXqS8eFjj2YvdmLJqIWXPl57Yw10SvYx0DQOtkfsWIV9Aw==
+
 jsbn@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-1.1.0.tgz#b01307cb29b618a1ed26ec79e911f803c4da0040"

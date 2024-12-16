@@ -79,11 +79,7 @@ app.use(session(sessionOptions));
 //
 // CORS
 //
-app.use(
-	cors({
-		origin: '*',
-	})
-);
+app.use(cors({ origin: '*' }));
 
 //
 // MORGAN

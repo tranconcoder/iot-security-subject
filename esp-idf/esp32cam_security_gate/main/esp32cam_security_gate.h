@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include "esp_http_client.h"
 
-#include "setup_rc522.h"
+// #include "setup_rc522.h"
 #include "setup_esp32_cam.h"
 #include "config_http_client.h"
 // #include "setup_esp_websocket_client.h"

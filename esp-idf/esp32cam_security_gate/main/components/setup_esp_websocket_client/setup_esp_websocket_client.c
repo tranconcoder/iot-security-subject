@@ -8,7 +8,7 @@
 #include "esp_log.h"
 #include "esp_http_client.h"
 
-#define STACK_SIZE 8 * 1024 // Increased from 4K to 8K
+#define STACK_SIZE 32 * 1024 // Increased from 4K to 8K
 
 typedef struct
 {
@@ -19,6 +19,7 @@ typedef struct
 
 const char *TAG = "websocket_client";
 uint8_t hmacResult[32];
+uint8_t *encrypted_data = NULL;
 
 TaskHandle_t pv_task_send_image_to_websocket = NULL;
 
@@ -26,9 +27,7 @@ void ws_connected_cb()
 {
 
      if (pv_task_send_image_to_websocket != NULL)
-     {
           vTaskResume(pv_task_send_image_to_websocket);
-     }
 
      ESP_LOGI(TAG, "WebSocket client connected");
 }
@@ -62,25 +61,28 @@ void task_send_image_to_websocket(params_struct *params)
           }
 
           // Ensure memory allocation
-          char *enc_input = heap_caps_malloc(fb->len, MALLOC_CAP_SPIRAM);
-          char iv[16] = "1234567890123456";
+          size_t enc_len = (fb->len / AES_BLOCK_SIZE + 1) * AES_BLOCK_SIZE;
 
-          if (!enc_input)
+          // Call AES encryption function
+          if (aes_encrypt_custom((const unsigned char *)fb->buf, fb->len, (const unsigned char *)encrypted_data, hmacResult) == 0)
           {
-               ESP_LOGE(TAG, "Failed to allocate memory for encryption");
-               esp_camera_fb_return(fb);
-               vTaskDelay(1000 / portTICK_PERIOD_MS);
-               continue;
+               printf("encrypted data: %d", enc_len);
+               for (int i = enc_len - 100; i < enc_len; i++)
+               {
+                    printf("%02x ", encrypted_data[i]);
+               }
+               printf("\n");
           }
 
-          encrypt_any_length_string((const char *)fb->buf, &hmacResult, (uint8_t *)iv);
-          int send_result = esp_websocket_client_send_bin(params->ws_client, (char *)fb->buf, fb->len, 5000 / portTICK_PERIOD_MS);
+          int send_result = esp_websocket_client_send_bin(
+              params->ws_client,
+              (char *)encrypted_data,
+              enc_len,
+              pdMS_TO_TICKS(5000));
 
-          // Free allocated memory
-          free(enc_input);
           esp_camera_fb_return(fb);
 
-          if (send_result != -1)
+          if (true)
           {
                uint64_t current_time = esp_timer_get_time();
                ESP_LOGI(TAG,
@@ -108,6 +110,7 @@ void setup_esp_websocket_client_init(char *apiKey, uint64_t *secretKey)
              CONFIG_WEBSERVER_PORT,
              "esp32cam_security_gate_send_img");
 
+     encrypted_data = heap_caps_malloc(40000, MALLOC_CAP_SPIRAM);
      esp_websocket_client_config_t ws_cfg = {
          .uri = uri,
          .buffer_size = 16 * 1024,
