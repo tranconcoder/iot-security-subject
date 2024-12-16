@@ -1,6 +1,16 @@
 dependencies:
   esp-idf-rc522:
     path: ../../components/esp-idf-rc522
+  http_client_utils:
+    path: '../../components/http_client_utils'
+  setup_rc522:
+    path: './components/setup_rc522'
+  setup_diffie_hellman:
+    path: './components/setup_diffie_hellman'
+  aes-custom:
+    path: '../../components/aes-custom'
+  common_struct:
+    path: '../../components/common_struct'
   idf:
     version: '>=5.0'
   mesh_lite:

@@ -1,4 +1,16 @@
 dependencies:
+  aes-custom:
+    dependencies: []
+    source:
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/aes-custom
+      type: local
+    version: '*'
+  common_struct:
+    dependencies: []
+    source:
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/common_struct
+      type: local
+    version: '*'
   esp-idf-rc522:
     dependencies: []
     source:
@@ -77,14 +89,37 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 0.1.0~2
+  http_client_utils:
+    dependencies: []
+    source:
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/components/http_client_utils
+      type: local
+    version: '*'
   idf:
     source:
       type: idf
     version: 5.2.3
+  setup_diffie_hellman:
+    dependencies: []
+    source:
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32_rfid/main/components/setup_diffie_hellman
+      type: local
+    version: '*'
+  setup_rc522:
+    dependencies: []
+    source:
+      path: /home/tvconss/Workspace/iot-security-subject/esp-idf/esp32_rfid/main/components/setup_rc522
+      type: local
+    version: '*'
 direct_dependencies:
+- aes-custom
+- common_struct
 - esp-idf-rc522
 - espressif/mesh_lite
+- http_client_utils
 - idf
-manifest_hash: fced10f9a06fea1ae56f659ab019662648cd12575c6bd3d97eda70eca6a81932
+- setup_diffie_hellman
+- setup_rc522
+manifest_hash: d4f3c8ed083080782b4bca918082fc48abe3dc8015abd7debe91401a3b77f6a6
 target: esp32
 version: 2.0.0

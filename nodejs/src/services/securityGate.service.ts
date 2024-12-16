@@ -5,9 +5,11 @@ import {
 import { readStreamEsp32CamSecurityGateImg } from './stream.service';
 
 export default class SecurityGateServices {
-	public static async authDoor(rfidSerialNumber: number) {
+	public static async authDoor(
+		rfidSerialNumber: number,
+		secretKey: Uint8Array
+	) {
 		const TRANSFER_TIMEOUT = 5_000;
-		console.log(rfidSerialNumber);
 
 		async function handleData(data: Buffer) {
 			const path = `http://${FACE_RECOGNITION_SERVER_HOST}:${FACE_RECOGNITION_SERVER_PORT}/recog`;
